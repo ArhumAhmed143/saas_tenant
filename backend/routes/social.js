@@ -5,7 +5,7 @@ const pool = require('../config/db');
 const router = express.Router();
 
 // ============================================
-// GOOGLE OAUTH STRATEGY
+// SIRF GOOGLE OAUTH STRATEGY
 // ============================================
 const GoogleStrategy = require('passport-google-oauth20').Strategy;
 
@@ -58,59 +58,6 @@ async (accessToken, refreshToken, profile, done) => {
 }));
 
 // ============================================
-// GITHUB OAUTH STRATEGY
-// ============================================
-const GitHubStrategy = require('passport-github').Strategy;
-
-passport.use(new GitHubStrategy({
-    clientID: process.env.GITHUB_CLIENT_ID,
-    clientSecret: process.env.GITHUB_CLIENT_SECRET,
-    callbackURL: '/auth/github/callback',
-    scope: ['user:email']
-},
-async (accessToken, refreshToken, profile, done) => {
-    try {
-        const email = profile.emails?.[0]?.value || profile._json?.email;
-        const name = profile.displayName || profile.username || 'GitHub User';
-
-        if (!email) {
-            return done(null, false, { message: 'No email found' });
-        }
-
-        const userCheck = await pool.query('SELECT * FROM users WHERE email = $1', [email]);
-
-        if (userCheck.rows.length > 0) {
-            return done(null, userCheck.rows[0]);
-        }
-
-        const tenantName = `${name}'s Company`;
-        const slug = `company-${Date.now()}`;
-
-        await pool.query('BEGIN');
-        const tenantRes = await pool.query(
-            'INSERT INTO tenants (name, slug) VALUES ($1, $2) RETURNING id',
-            [tenantName, slug]
-        );
-        const tenantId = tenantRes.rows[0].id;
-
-        const userRes = await pool.query(
-            `INSERT INTO users (tenant_id, name, email, password_hash, role) 
-             VALUES ($1, $2, $3, $4, $5) 
-             RETURNING *`,
-            [tenantId, name, email, 'social_login', 'Admin']
-        );
-        await pool.query('COMMIT');
-
-        return done(null, userRes.rows[0]);
-
-    } catch (error) {
-        await pool.query('ROLLBACK');
-        console.error('GitHub Strategy Error:', error);
-        return done(error, null);
-    }
-}));
-
-// ============================================
 // PASSPORT SERIALIZATION
 // ============================================
 passport.serializeUser((user, done) => {
@@ -127,9 +74,8 @@ passport.deserializeUser(async (id, done) => {
 });
 
 // ============================================
-// SOCIAL LOGIN ROUTES
+// SIRF GOOGLE ROUTES
 // ============================================
-
 router.get('/google',
     passport.authenticate('google', { scope: ['profile', 'email'] })
 );
@@ -137,34 +83,6 @@ router.get('/google',
 router.get('/google/callback',
     passport.authenticate('google', { 
         failureRedirect: 'http://localhost:3000/login?error=google_failed',
-        session: true
-    }),
-    (req, res) => {
-        const user = req.user;
-        const accessToken = jwt.sign(
-            { userId: user.id, tenantId: user.tenant_id, role: user.role },
-            process.env.JWT_SECRET,
-            { expiresIn: '15m' }
-        );
-        const refreshToken = jwt.sign(
-            { userId: user.id },
-            process.env.JWT_REFRESH_SECRET,
-            { expiresIn: '7d' }
-        );
-
-        res.redirect(
-            `http://localhost:3000/auth-callback?accessToken=${accessToken}&refreshToken=${refreshToken}&userId=${user.id}&name=${encodeURIComponent(user.name)}&email=${user.email}&role=${user.role}&tenantId=${user.tenant_id}`
-        );
-    }
-);
-
-router.get('/github',
-    passport.authenticate('github', { scope: ['user:email'] })
-);
-
-router.get('/github/callback',
-    passport.authenticate('github', { 
-        failureRedirect: 'http://localhost:3000/login?error=github_failed',
         session: true
     }),
     (req, res) => {

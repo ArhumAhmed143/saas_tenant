@@ -116,18 +116,13 @@ export default function Register() {
           <hr /> OR <hr />
         </div>
 
-        {/* 🆕 SOCIAL SIGNUP BUTTONS - WORKING */}
         <a href="http://localhost:5000/auth/google" style={{ textDecoration: 'none' }}>
           <button className="social-btn" style={{ marginBottom: 8 }}>
             <span>🔵</span> Sign up with Google
           </button>
         </a>
 
-        <a href="http://localhost:5000/auth/github" style={{ textDecoration: 'none' }}>
-          <button className="social-btn">
-            <span>⚫</span> Sign up with GitHub
-          </button>
-        </a>
+        {/* ✅ GitHub Button DELETE KAR DIYA */}
 
         <p style={{ textAlign: 'center', marginTop: 24, color: 'var(--gray-500)' }}>
           Already have an account? <Link to="/login" style={{ color: 'var(--primary)', fontWeight: 600 }}>Sign in</Link>

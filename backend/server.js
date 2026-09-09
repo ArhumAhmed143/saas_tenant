@@ -1,3 +1,4 @@
+const inviteRoutes = require('./routes/invite');
 const burndownRoutes = require('./routes/burndown');
 const express = require('express');
 const cors = require('cors');
@@ -19,7 +20,9 @@ app.use(session({
 // ===== PASSPORT INITIALIZE =====
 app.use(passport.initialize());
 app.use(passport.session());
+app.use('/api/invite', inviteRoutes);
 app.use('/api/burndown', burndownRoutes);
+
 
 // ===== CORS + JSON =====
 app.use(cors({

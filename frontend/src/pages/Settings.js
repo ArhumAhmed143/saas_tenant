@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useApp } from '../context/AppContext';
 import { Sidebar } from '../components/Sidebar';
+import axios from 'axios';
 
 export default function Settings() {
   const { currentTenant, users, addActivity, currentUser } = useApp();
@@ -9,6 +10,8 @@ export default function Settings() {
   const [isEditing, setIsEditing] = useState(false);
   const [inviteEmail, setInviteEmail] = useState('');
   const [inviteRole, setInviteRole] = useState('Employee');
+  const [isInviting, setIsInviting] = useState(false);
+  const [inviteMessage, setInviteMessage] = useState('');
 
   // Handle Save Profile
   const handleSaveProfile = () => {
@@ -17,12 +20,37 @@ export default function Settings() {
     alert('✅ Company profile updated successfully!');
   };
 
-  // Handle Invite
-  const handleInvite = () => {
-    if (!inviteEmail) return alert('Please enter an email');
-    addActivity(`Invited ${inviteEmail} as ${inviteRole}`);
-    alert(`📧 Invitation sent to ${inviteEmail} as ${inviteRole}`);
-    setInviteEmail('');
+  // Handle Invite (REAL EMAIL SENDING)
+  const handleInvite = async () => {
+    if (!inviteEmail) {
+      alert('Please enter an email address');
+      return;
+    }
+
+    setIsInviting(true);
+    setInviteMessage('');
+
+    try {
+      const token = localStorage.getItem('accessToken');
+      const response = await axios.post(
+        'http://localhost:5000/api/invite',
+        { email: inviteEmail, role: inviteRole },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+
+      setInviteMessage(`✅ ${response.data.message}`);
+      addActivity(`Invited ${inviteEmail} as ${inviteRole}`);
+      setInviteEmail('');
+      
+      // Clear success message after 5 seconds
+      setTimeout(() => setInviteMessage(''), 5000);
+    } catch (error) {
+      const errMsg = error.response?.data?.message || 'Failed to send invitation';
+      setInviteMessage(`❌ ${errMsg}`);
+      console.error('Invite error:', error);
+    } finally {
+      setIsInviting(false);
+    }
   };
 
   // Handle Remove Member
@@ -167,20 +195,37 @@ export default function Settings() {
           )}
         </div>
 
-        {/* ===== SECTION 3: INVITE MEMBER ===== */}
+        {/* ===== SECTION 3: INVITE MEMBER (REAL EMAIL) ===== */}
         <div style={{ background: 'white', padding: 24, borderRadius: 16, border: '1px solid #e2e8f0', marginBottom: 24 }}>
           <h4 style={{ marginBottom: 16, color: '#0f172a' }}>📨 Invite New Member</h4>
+          
+          {/* Message Display */}
+          {inviteMessage && (
+            <div style={{ 
+              padding: '12px 16px', 
+              borderRadius: 8, 
+              marginBottom: 16,
+              background: inviteMessage.startsWith('✅') ? '#dcfce7' : '#fee2e2',
+              color: inviteMessage.startsWith('✅') ? '#16a34a' : '#dc2626',
+              border: inviteMessage.startsWith('✅') ? '1px solid #bbf7d0' : '1px solid #fecaca'
+            }}>
+              {inviteMessage}
+            </div>
+          )}
+
           <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
             <input 
               value={inviteEmail} 
               onChange={(e) => setInviteEmail(e.target.value)} 
               placeholder="Enter email address"
               style={{ flex: 2, padding: '10px 14px', borderRadius: 8, border: '1px solid #e2e8f0', minWidth: 200 }}
+              disabled={isInviting}
             />
             <select 
               value={inviteRole} 
               onChange={(e) => setInviteRole(e.target.value)}
               style={{ padding: '10px 14px', borderRadius: 8, border: '1px solid #e2e8f0', background: 'white' }}
+              disabled={isInviting}
             >
               <option>Admin</option>
               <option>Manager</option>
@@ -188,20 +233,25 @@ export default function Settings() {
             </select>
             <button 
               onClick={handleInvite}
+              disabled={isInviting}
               style={{ 
                 padding: '10px 24px', 
-                background: '#4f46e5', 
+                background: isInviting ? '#94a3b8' : '#4f46e5', 
                 color: 'white', 
                 border: 'none', 
                 borderRadius: 8, 
                 fontWeight: 600,
-                cursor: 'pointer',
-                whiteSpace: 'nowrap'
+                cursor: isInviting ? 'not-allowed' : 'pointer',
+                whiteSpace: 'nowrap',
+                minWidth: 140
               }}
             >
-              + Send Invite
+              {isInviting ? '⏳ Sending...' : '+ Send Invite'}
             </button>
           </div>
+          <p style={{ fontSize: '0.75rem', color: '#94a3b8', marginTop: 8 }}>
+            An email invitation will be sent to the provided address.
+          </p>
         </div>
 
         {/* ===== SECTION 4: DANGER ZONE ===== */}

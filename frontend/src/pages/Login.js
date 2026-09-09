@@ -89,11 +89,7 @@ export default function Login() {
           </button>
         </a>
 
-        <a href="http://localhost:5000/auth/github" style={{ textDecoration: 'none' }}>
-          <button className="social-btn">
-            <span>⚫</span> Sign in with GitHub
-          </button>
-        </a>
+        {/* ✅ GitHub Button DELETE KAR DIYA */}
 
         <p style={{ textAlign: 'center', marginTop: 24, color: 'var(--gray-500)' }}>
           Don't have an account? <Link to="/register" style={{ color: 'var(--primary)', fontWeight: 600 }}>Create one</Link>
