@@ -74,6 +74,24 @@ app.get('/', (req, res) => {
     res.send('🚀 SaaS Backend is running!');
 });
 
+// ========== 4.1 HEALTH CHECK ROUTE (UptimeRobot ke liye) ==========
+app.get('/health', async (req, res) => {
+    try {
+        const pool = require('./config/db');
+        await pool.query('SELECT 1');
+        res.status(200).json({ 
+            status: 'ok', 
+            db: 'connected',
+            time: new Date().toISOString()
+        });
+    } catch (err) {
+        res.status(500).json({ 
+            status: 'error', 
+            db: 'disconnected',
+            message: err.message 
+        });
+    }
+});
 // ========== 5. SWAGGER SETUP ==========
 const swaggerUi = require('swagger-ui-express');
 const swaggerJsdoc = require('swagger-jsdoc');

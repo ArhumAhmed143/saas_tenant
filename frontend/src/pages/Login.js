@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useApp } from '../context/AppContext';
 import '../styles/global.css';
+import { API_URL } from '../api';
 
 export default function Login() {
   const [email, setEmail] = useState('');
@@ -83,7 +84,7 @@ export default function Login() {
           <hr /> OR <hr />
         </div>
 
-        <a href="http://localhost:5000/auth/google" style={{ textDecoration: 'none' }}>
+        <a href={`${API_URL}/api/auth/google`} style={{ textDecoration: 'none' }}>
           <button className="social-btn" style={{ marginBottom: 8 }}>
             <span>🔵</span> Sign in with Google
           </button>

@@ -5,6 +5,12 @@ const pool = require('../config/db');
 const router = express.Router();
 
 // ============================================
+// ENVIRONMENT VARIABLES (Production Ready)
+// ============================================
+const BACKEND_URL = process.env.BACKEND_URL || 'http://localhost:5000';
+const FRONTEND_URL = process.env.FRONTEND_URL || 'http://localhost:3000';
+
+// ============================================
 // SIRF GOOGLE OAUTH STRATEGY
 // ============================================
 const GoogleStrategy = require('passport-google-oauth20').Strategy;
@@ -12,7 +18,7 @@ const GoogleStrategy = require('passport-google-oauth20').Strategy;
 passport.use(new GoogleStrategy({
     clientID: process.env.GOOGLE_CLIENT_ID,
     clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-    callbackURL: '/auth/google/callback',
+    callbackURL: `${BACKEND_URL}/auth/google/callback`,
     scope: ['profile', 'email']
 },
 async (accessToken, refreshToken, profile, done) => {
@@ -82,7 +88,7 @@ router.get('/google',
 
 router.get('/google/callback',
     passport.authenticate('google', { 
-        failureRedirect: 'http://localhost:3000/login?error=google_failed',
+        failureRedirect: `${FRONTEND_URL}/login?error=google_failed`,
         session: true
     }),
     (req, res) => {
@@ -99,7 +105,7 @@ router.get('/google/callback',
         );
 
         res.redirect(
-            `http://localhost:3000/auth-callback?accessToken=${accessToken}&refreshToken=${refreshToken}&userId=${user.id}&name=${encodeURIComponent(user.name)}&email=${user.email}&role=${user.role}&tenantId=${user.tenant_id}`
+            `${FRONTEND_URL}/auth-callback?accessToken=${accessToken}&refreshToken=${refreshToken}&userId=${user.id}&name=${encodeURIComponent(user.name)}&email=${user.email}&role=${user.role}&tenantId=${user.tenant_id}`
         );
     }
 );

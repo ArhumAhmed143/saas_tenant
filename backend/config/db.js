@@ -20,7 +20,7 @@ pool.on('error', (err) => {
 });
 
 // ✅ Test connection with retry
-const testConnection = async (retries = 3) => {
+const testConnection = async (retries = 5) => {
     for (let i = 0; i < retries; i++) {
         try {
             const result = await pool.query('SELECT NOW()');
@@ -32,12 +32,13 @@ const testConnection = async (retries = 3) => {
                 console.error('❌ All connection attempts failed');
                 return false;
             }
-            // Wait 2 sec before retry
-            await new Promise(r => setTimeout(r, 2000));
+            // Neon ko jaagne ke liye zyada waqt dein
+            const waitTime = i === 0 ? 3000 : 2000;
+            console.log(`⏳ Waiting ${waitTime}ms for Neon to wake up...`);
+            await new Promise(r => setTimeout(r, waitTime));
         }
     }
 };
-
 // Initial connection test
 testConnection();
 

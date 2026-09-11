@@ -1,7 +1,7 @@
 import React, { createContext, useState, useContext, useEffect, useCallback, useMemo } from 'react';
 import axios from 'axios';
+import { API_URL } from '../api';
 
-const API_URL = 'http://localhost:5000/api';
 const AppContext = createContext();
 
 export const AppProvider = ({ children }) => {
@@ -37,84 +37,84 @@ export const AppProvider = ({ children }) => {
   // ========== FETCH FUNCTIONS ==========
   const fetchProjects = useCallback(async () => {
     try {
-      const res = await api.get('/projects');
+      const res = await api.get('/api/projects');
       setProjects(res.data);
     } catch (e) { console.error('projects:', e); }
   }, [api]);
 
   const fetchSprints = useCallback(async () => {
     try {
-      const res = await api.get('/sprints');
+      const res = await api.get('/api/sprints');
       setSprints(res.data);
     } catch (e) { console.error('sprints:', e); }
   }, [api]);
 
   const fetchTasks = useCallback(async () => {
     try {
-      const res = await api.get('/tasks');
+      const res = await api.get('/api/tasks');
       setTasks(res.data);
     } catch (e) { console.error('tasks:', e); }
   }, [api]);
 
   const fetchEpics = useCallback(async () => {
     try {
-      const res = await api.get('/epics');
+      const res = await api.get('/api/epics');
       setEpics(res.data);
     } catch (e) { console.error('epics:', e); }
   }, [api]);
 
   const fetchUsers = useCallback(async () => {
     try {
-      const res = await api.get('/users');
+      const res = await api.get('/api/users');
       setUsers(res.data);
     } catch (e) { console.error('users:', e); }
   }, [api]);
 
   const fetchActivities = useCallback(async () => {
     try {
-      const res = await api.get('/activities');
+      const res = await api.get('/api/activities');
       setActivities(res.data);
     } catch (e) { console.error('activities:', e); }
   }, [api]);
 
   const fetchDepartments = useCallback(async () => {
     try {
-      const res = await api.get('/departments');
+      const res = await api.get('/api/departments');
       setDepartments(res.data);
     } catch (e) { console.error('departments:', e); }
   }, [api]);
 
   const fetchTeams = useCallback(async () => {
     try {
-      const res = await api.get('/teams');
+      const res = await api.get('/api/teams');
       setTeams(res.data);
     } catch (e) { console.error('teams:', e); }
   }, [api]);
 
   const fetchBurndown = useCallback(async () => {
     try {
-      const res = await api.get('/burndown');
+      const res = await api.get('/api/burndown');
       setBurndownData(res.data);
     } catch (e) { console.error('burndown:', e); }
   }, [api]);
 
   const fetchComments = useCallback(async () => {
     try {
-      const res = await api.get('/comments');
+      const res = await api.get('/api/comments');
       setComments(res.data);
     } catch (e) { console.error('comments:', e); }
   }, [api]);
 
   const fetchSubtasks = useCallback(async () => {
     try {
-      const res = await api.get('/subtasks');
+      const res = await api.get('/api/subtasks');
       setSubtasks(res.data);
     } catch (e) { console.error('subtasks:', e); }
   }, [api]);
 
   const addActivity = useCallback(async (action) => {
     try {
-      await api.post('/activities', { action });
+      await api.post('/api/activities', { action });
       await fetchActivities();
     } catch (e) { console.error('add activity:', e); }
   }, [api, fetchActivities]);
@@ -144,7 +144,7 @@ export const AppProvider = ({ children }) => {
         setCurrentUser(user);
 
         if (user.tenantId) {
-          api.get(`/tenants/${user.tenantId}`)
+          api.get(`/api/tenants/${user.tenantId}`)
             .then(res => setCurrentTenant({
               id: res.data.id,
               name: res.data.name,
@@ -172,7 +172,7 @@ export const AppProvider = ({ children }) => {
   const login = async (email, password) => {
     setIsLoading(true);
     try {
-      const response = await axios.post(`${API_URL}/auth/login`, { email, password });
+      const response = await axios.post(`${API_URL}/api/auth/login`, { email, password });
       const data = response.data;
 
       if (data.success) {
@@ -184,7 +184,7 @@ export const AppProvider = ({ children }) => {
 
         if (data.user.tenantId) {
           try {
-            const t = await axios.get(`${API_URL}/tenants/${data.user.tenantId}`, {
+            const t = await axios.get(`${API_URL}/api/tenants/${data.user.tenantId}`, {
               headers: { Authorization: `Bearer ${data.accessToken}` }
             });
             setCurrentTenant({
@@ -228,7 +228,7 @@ export const AppProvider = ({ children }) => {
         payload.organizationName = userData.organizationName;
       }
 
-      const response = await axios.post(`${API_URL}/auth/register`, payload);
+      const response = await axios.post(`${API_URL}/api/auth/register`, payload);
       setIsLoading(false);
       return response.data;
     } catch (error) {
@@ -241,7 +241,7 @@ export const AppProvider = ({ children }) => {
   const registerPlatformOwner = async (userData) => {
     setIsLoading(true);
     try {
-      const response = await axios.post(`${API_URL}/auth/register-platform-owner`, {
+      const response = await axios.post(`${API_URL}/api/auth/register-platform-owner`, {
         name: userData.name,
         email: userData.email,
         password: userData.password
@@ -257,7 +257,7 @@ export const AppProvider = ({ children }) => {
   // ---------- SEND INVITE ----------
   const sendInvite = async (email, role) => {
     try {
-      const response = await api.post('/invite', { email, role });
+      const response = await api.post('/api/invite', { email, role });
       await addActivity(`Invited ${email} as ${role}`);
       return response.data;
     } catch (error) {
@@ -288,7 +288,7 @@ export const AppProvider = ({ children }) => {
   // ========== USER MANAGEMENT ==========
   const updateUserRole = async (userId, newRole) => {
     try {
-      await api.put(`/users/${userId}/role`, { role: newRole });
+      await api.put(`/api/users/${userId}/role`, { role: newRole });
       setUsers(users.map(u => u.id === userId ? { ...u, role: newRole } : u));
       await addActivity(`Changed role to ${newRole}`);
     } catch (error) {
@@ -298,7 +298,7 @@ export const AppProvider = ({ children }) => {
 
   const removeUser = async (userId) => {
     try {
-      await api.delete(`/users/${userId}`);
+      await api.delete(`/api/users/${userId}`);
       setUsers(users.filter(u => u.id !== userId));
       await addActivity(`Removed a member`);
     } catch (error) {
@@ -308,7 +308,7 @@ export const AppProvider = ({ children }) => {
 
   const updateTenant = async (name) => {
     try {
-      const res = await api.put(`/tenants/${currentTenant.id}`, { name });
+      const res = await api.put(`/api/tenants/${currentTenant.id}`, { name });
       setCurrentTenant({ ...currentTenant, name: res.data.name });
       await addActivity(`Updated company name to "${name}"`);
     } catch (error) {
@@ -319,7 +319,7 @@ export const AppProvider = ({ children }) => {
   // ========== CRUD OPERATIONS ==========
   const addSprint = async (sprint) => {
     try {
-      const res = await api.post('/sprints', {
+      const res = await api.post('/api/sprints', {
         name: sprint.name,
         projectId: sprint.projectId,
         startDate: sprint.startDate,
@@ -335,7 +335,7 @@ export const AppProvider = ({ children }) => {
 
   const addProject = async (project) => {
     try {
-      const res = await api.post('/projects', project);
+      const res = await api.post('/api/projects', project);
       setProjects([...projects, res.data]);
       await addActivity(`Created Project "${project.name}"`);
       return res.data;
@@ -344,7 +344,7 @@ export const AppProvider = ({ children }) => {
 
   const deleteProject = async (id) => {
     try {
-      await api.delete(`/projects/${id}`);
+      await api.delete(`/api/projects/${id}`);
       setProjects(projects.filter(p => p.id !== id));
       await addActivity(`Deleted Project ID ${id}`);
     } catch (error) { throw error; }
@@ -352,7 +352,7 @@ export const AppProvider = ({ children }) => {
 
   const addTask = async (task) => {
     try {
-      const res = await api.post('/tasks', {
+      const res = await api.post('/api/tasks', {
         projectId: parseInt(task.projectId),
         assigneeId: task.assigneeId ? parseInt(task.assigneeId) : null,
         title: task.title,
@@ -389,7 +389,7 @@ export const AppProvider = ({ children }) => {
 
   const addDepartment = async (name) => {
     try {
-      const res = await api.post('/departments', { name });
+      const res = await api.post('/api/departments', { name });
       setDepartments([...departments, res.data]);
       await addActivity(`Added department: ${name}`);
       return res.data;
@@ -398,7 +398,7 @@ export const AppProvider = ({ children }) => {
 
   const deleteDepartment = async (id) => {
     try {
-      await api.delete(`/departments/${id}`);
+      await api.delete(`/api/departments/${id}`);
       setDepartments(departments.filter(d => d.id !== id));
       await addActivity(`Deleted department`);
     } catch (error) { throw error; }
@@ -406,7 +406,7 @@ export const AppProvider = ({ children }) => {
 
   const addTeam = async (name, departmentId) => {
     try {
-      const res = await api.post('/teams', { name, departmentId });
+      const res = await api.post('/api/teams', { name, departmentId });
       setTeams([...teams, res.data]);
       await addActivity(`Added team: ${name}`);
       return res.data;
@@ -415,7 +415,7 @@ export const AppProvider = ({ children }) => {
 
   const deleteTeam = async (id) => {
     try {
-      await api.delete(`/teams/${id}`);
+      await api.delete(`/api/teams/${id}`);
       setTeams(teams.filter(t => t.id !== id));
       await addActivity(`Deleted team`);
     } catch (error) { throw error; }
