@@ -8,8 +8,15 @@ const app = express();
 const PORT = process.env.PORT || 5000;
 
 // ========== 1. MIDDLEWARE FIRST ==========
+const allowedOrigins = [
+    'http://localhost:3000',
+    'http://localhost:3001',
+    'https://your-frontend-service.onrender.com',  // 👈 apni frontend URL
+    process.env.FRONTEND_URL                        // 👈 ya env se
+].filter(Boolean);
+
 app.use(cors({
-    origin: ['http://localhost:3000', 'http://localhost:3001'],
+    origin: allowedOrigins,
     credentials: true
 }));
 app.use(express.json());
@@ -39,9 +46,9 @@ const burndownRoutes = require('./routes/burndown');
 const tenantRoutes = require('./routes/tenants');
 const platformRoutes = require('./routes/platform');
 const notificationRoutes = require('./routes/notifications');
-const inviteRoutes = require('./routes/invite');          // 🆕 INVITE
-const commentRoutes = require('./routes/comments');        // 🆕 COMMENTS (agar bani hai)
-const subtaskRoutes = require('./routes/subtasks');        // 🆕 SUBTASKS (agar bani hai)
+const inviteRoutes = require('./routes/invite');
+const commentRoutes = require('./routes/comments');
+const subtaskRoutes = require('./routes/subtasks');
 
 // ========== 3. USE ALL ROUTES ==========
 app.use('/api/auth', authRoutes);
@@ -57,9 +64,9 @@ app.use('/api/burndown', burndownRoutes);
 app.use('/api/tenants', tenantRoutes);
 app.use('/api/platform', platformRoutes);
 app.use('/api/notifications', notificationRoutes);
-app.use('/api/invite', inviteRoutes);                      // 🆕 INVITE ROUTE
-app.use('/api/comments', commentRoutes);                   // 🆕 COMMENTS
-app.use('/api/subtasks', subtaskRoutes);                   // 🆕 SUBTASKS
+app.use('/api/invite', inviteRoutes);
+app.use('/api/comments', commentRoutes);
+app.use('/api/subtasks', subtaskRoutes);
 app.use('/auth', socialRoutes);
 
 // ========== 4. ROOT ROUTE ==========
@@ -78,7 +85,7 @@ const swaggerOptions = {
             title: 'Multi-Tenant SaaS API',
             version: '1.0.0',
         },
-        servers: [{ url: `http://localhost:${PORT}` }],
+        servers: [{ url: process.env.BACKEND_URL || `http://localhost:${PORT}` }],
         components: {
             securitySchemes: {
                 bearerAuth: {
@@ -97,7 +104,7 @@ const swaggerDocs = swaggerJsdoc(swaggerOptions);
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocs));
 
 // ========== 6. SERVER START ==========
-app.listen(PORT, () => {
-    console.log(`✅ Server running on http://localhost:${PORT}`);
-    console.log(`📚 Swagger Docs: http://localhost:${PORT}/api-docs`);
+app.listen(PORT, '0.0.0.0', () => {
+    console.log(`✅ Server running on port ${PORT}`);
+    console.log(`📚 Swagger Docs available at /api-docs`);
 });

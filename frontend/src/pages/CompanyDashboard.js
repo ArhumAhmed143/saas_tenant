@@ -1,8 +1,8 @@
 import { useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { useApp } from '../context/AppContext';
 import { Sidebar } from '../components/Sidebar';
-import { Link } from 'react-router-dom';
+import NotificationBell from '../components/NotificationBell';
 
 export default function CompanyDashboard() {
   const navigate = useNavigate();
@@ -12,7 +12,7 @@ export default function CompanyDashboard() {
     fetchUsers, fetchProjects, fetchTasks, fetchActivities, fetchSprints
   } = useApp();
 
-  // 🆕 Force fetch data on mount
+  // ✅ Force fetch on mount
   useEffect(() => {
     fetchUsers();
     fetchProjects();
@@ -31,7 +31,6 @@ export default function CompanyDashboard() {
 
   const progress = totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0;
 
-  // Stats cards
   const stats = [
     { label: 'Total Projects', value: projects.length, icon: '📂', color: '#4f46e5' },
     { label: 'Total Tasks', value: totalTasks, icon: '✅', color: '#0ea5e9' },
@@ -39,7 +38,6 @@ export default function CompanyDashboard() {
     { label: 'Team Members', value: users.length, icon: '👥', color: '#22c55e' },
   ];
 
-  // Project Status Distribution
   const projectStatusCounts = {
     'Active': projects.filter(p => p.status === 'Active').length,
     'Planning': projects.filter(p => p.status === 'Planning').length,
@@ -53,11 +51,9 @@ export default function CompanyDashboard() {
     'On Hold': '#ef4444',
   };
 
-  // Team Workload
   const workload = getWorkloadByUser();
   const workloadArray = Object.keys(workload).map(id => ({ id, ...workload[id] }));
 
-  // Burndown data
   const hasRealData = burndownData && burndownData.length > 0 && burndownData.some(d => d.completed > 0);
   let chartData = [];
   if (hasRealData) {
@@ -81,7 +77,9 @@ export default function CompanyDashboard() {
   return (
     <div style={{ display: 'flex', minHeight: '100vh', background: '#f1f5f9' }}>
       <Sidebar />
-      <main style={{ marginLeft: 240, padding: 32, width: '100%' }}>
+      <NotificationBell />   {/* 🆕 Bell icon - top-right corner */}
+      
+      <main style={{ marginLeft: 240, padding: 32, width: '100%', paddingTop: 80 }}>
         {/* Header */}
         <div style={{ marginBottom: 32 }}>
           <h1 style={{ fontSize: '1.8rem', fontWeight: 700, color: '#4f46e5' }}>
@@ -92,7 +90,7 @@ export default function CompanyDashboard() {
           </p>
         </div>
 
-        {/* ========== STATS CARDS (5) ========== */}
+        {/* STATS CARDS */}
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 16, marginBottom: 24 }}>
           {stats.map((stat, i) => (
             <div key={i} style={{ background: 'white', padding: '18px 20px', borderRadius: 14, border: '1px solid #e2e8f0' }}>
@@ -115,10 +113,8 @@ export default function CompanyDashboard() {
           </div>
         </div>
 
-        {/* ========== ROW 1: Overall Progress + Task Distribution ========== */}
+        {/* ROW 1: Overall Progress + Sprint Burndown */}
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20, marginBottom: 24 }}>
-          
-          {/* Overall Progress */}
           <div style={{ background: 'white', padding: 24, borderRadius: 16, border: '1px solid #e2e8f0' }}>
             <h3 style={{ fontSize: '1rem', color: '#0f172a', marginBottom: 16 }}>📈 Overall Progress</h3>
             <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.9rem', color: '#64748b', marginBottom: 6 }}>
@@ -126,7 +122,7 @@ export default function CompanyDashboard() {
               <span style={{ fontWeight: 700, color: '#4f46e5' }}>{progress}%</span>
             </div>
             <div style={{ height: 10, background: '#e2e8f0', borderRadius: 5, overflow: 'hidden', marginBottom: 16 }}>
-              <div style={{ height: '100%', width: `${progress}%`, background: '#4f46e5', borderRadius: 5, transition: 'width 0.5s' }}></div>
+              <div style={{ height: '100%', width: `${progress}%`, background: '#4f46e5', borderRadius: 5 }}></div>
             </div>
             <div style={{ display: 'flex', gap: 20 }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
@@ -144,7 +140,6 @@ export default function CompanyDashboard() {
             </div>
           </div>
 
-          {/* Sprint Burndown */}
           <div style={{ background: 'white', padding: 24, borderRadius: 16, border: '1px solid #e2e8f0' }}>
             <h3 style={{ fontSize: '1rem', color: '#0f172a', marginBottom: 16 }}>📉 Sprint Burndown</h3>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', height: 100, gap: 4 }}>
@@ -167,10 +162,8 @@ export default function CompanyDashboard() {
           </div>
         </div>
 
-        {/* ========== ROW 2: Projects + Quick Actions ========== */}
+        {/* ROW 2: Projects + Quick Actions */}
         <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: 20, marginBottom: 24 }}>
-          
-          {/* Projects Status */}
           <div style={{ background: 'white', padding: 24, borderRadius: 16, border: '1px solid #e2e8f0' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
               <h3 style={{ fontSize: '1rem', color: '#0f172a', margin: 0 }}>📂 Projects by Status</h3>
@@ -199,42 +192,27 @@ export default function CompanyDashboard() {
             )}
           </div>
 
-          {/* Quick Actions */}
           <div style={{ background: 'white', padding: 24, borderRadius: 16, border: '1px solid #e2e8f0' }}>
             <h3 style={{ fontSize: '1rem', color: '#0f172a', marginBottom: 16 }}>⚡ Quick Actions</h3>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-              <button 
-                onClick={() => navigate('/projects')} 
-                style={{ padding: '10px 16px', background: '#4f46e5', color: 'white', border: 'none', borderRadius: 8, fontWeight: 600, fontSize: '0.85rem', cursor: 'pointer', textAlign: 'left' }}
-              >
+              <button onClick={() => navigate('/projects')} style={{ padding: '10px 16px', background: '#4f46e5', color: 'white', border: 'none', borderRadius: 8, fontWeight: 600, fontSize: '0.85rem', cursor: 'pointer', textAlign: 'left' }}>
                 + New Project
               </button>
-              <button 
-                onClick={() => navigate('/tasks')} 
-                style={{ padding: '10px 16px', background: '#0ea5e9', color: 'white', border: 'none', borderRadius: 8, fontWeight: 600, fontSize: '0.85rem', cursor: 'pointer', textAlign: 'left' }}
-              >
+              <button onClick={() => navigate('/tasks')} style={{ padding: '10px 16px', background: '#0ea5e9', color: 'white', border: 'none', borderRadius: 8, fontWeight: 600, fontSize: '0.85rem', cursor: 'pointer', textAlign: 'left' }}>
                 + New Task
               </button>
-              <button 
-                onClick={() => navigate('/sprints')} 
-                style={{ padding: '10px 16px', background: '#f59e0b', color: 'white', border: 'none', borderRadius: 8, fontWeight: 600, fontSize: '0.85rem', cursor: 'pointer', textAlign: 'left' }}
-              >
+              <button onClick={() => navigate('/sprints')} style={{ padding: '10px 16px', background: '#f59e0b', color: 'white', border: 'none', borderRadius: 8, fontWeight: 600, fontSize: '0.85rem', cursor: 'pointer', textAlign: 'left' }}>
                 + New Sprint
               </button>
-              <button 
-                onClick={() => navigate('/organization')} 
-                style={{ padding: '10px 16px', background: '#f1f5f9', color: '#0f172a', border: '1px solid #e2e8f0', borderRadius: 8, fontWeight: 600, fontSize: '0.85rem', cursor: 'pointer', textAlign: 'left' }}
-              >
+              <button onClick={() => navigate('/organization')} style={{ padding: '10px 16px', background: '#f1f5f9', color: '#0f172a', border: '1px solid #e2e8f0', borderRadius: 8, fontWeight: 600, fontSize: '0.85rem', cursor: 'pointer', textAlign: 'left' }}>
                 👥 Manage Team
               </button>
             </div>
           </div>
         </div>
 
-        {/* ========== ROW 3: Team Workload + Recent Activity ========== */}
+        {/* ROW 3: Team Workload + Recent Activity */}
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20 }}>
-          
-          {/* Team Workload */}
           <div style={{ background: 'white', padding: 24, borderRadius: 16, border: '1px solid #e2e8f0' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
               <h3 style={{ fontSize: '1rem', color: '#0f172a', margin: 0 }}>👥 Team Workload</h3>
@@ -279,7 +257,6 @@ export default function CompanyDashboard() {
             )}
           </div>
 
-          {/* Recent Activity */}
           <div style={{ background: 'white', padding: 24, borderRadius: 16, border: '1px solid #e2e8f0' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
               <h3 style={{ fontSize: '1rem', color: '#0f172a', margin: 0 }}>📋 Recent Activity</h3>
