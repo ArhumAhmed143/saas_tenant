@@ -8,7 +8,6 @@ const router = express.Router();
 // ============================================
 router.get('/', auth, async (req, res) => {
     try {
-        // Last 5 days ka data nikalna hai
         const result = await pool.query(
             `SELECT 
                 DATE(updated_at) as date,
@@ -30,7 +29,12 @@ router.get('/', auth, async (req, res) => {
             d.setDate(d.getDate() - i);
             const dateStr = d.toISOString().split('T')[0];
             
-            const found = result.rows.find(row => row.date.toISOString().split('T')[0] === dateStr);
+            // ✅ Safe check - row.date null ho sakta hai
+            const found = result.rows.find(row => {
+                if (!row.date) return false;
+                return row.date.toISOString().split('T')[0] === dateStr;
+            });
+            
             data.push({
                 day: d.toLocaleDateString('en-US', { weekday: 'short' }),
                 completed: found ? parseInt(found.completed_count) : 0,

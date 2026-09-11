@@ -5,13 +5,77 @@ const pool = require('../config/db');
 const router = express.Router();
 
 // ============================================
-// REGISTER
+// REGISTER (Company OR Invited Member)
 // ============================================
 router.post('/register', async (req, res) => {
     try {
-        const { name, email, password, organizationName } = req.body;
-        if (!name || !email || !password || !organizationName) {
-            return res.status(400).json({ message: 'All fields are required' });
+        const { name, email, password, organizationName, inviteToken } = req.body;
+        
+        if (!name || !email || !password) {
+            return res.status(400).json({ message: 'Name, email and password are required' });
+        }
+
+        // ========== CHECK IF INVITE TOKEN EXISTS ==========
+        if (inviteToken) {
+            const inviteRes = await pool.query(
+                `SELECT * FROM invites 
+                 WHERE token = $1 AND status = 'pending' AND expires_at > NOW()`,
+                [inviteToken]
+            );
+
+            if (inviteRes.rows.length === 0) {
+                return res.status(400).json({ message: 'Invalid or expired invite token' });
+            }
+
+            const invite = inviteRes.rows[0];
+
+            // Email match karo
+            if (invite.email.toLowerCase() !== email.toLowerCase()) {
+                return res.status(400).json({ message: 'Email does not match the invite' });
+            }
+
+            // User check karo
+            const existingUser = await pool.query('SELECT id FROM users WHERE email = $1', [email]);
+            if (existingUser.rows.length > 0) {
+                return res.status(400).json({ message: 'Email already registered' });
+            }
+
+            const hashedPassword = await bcrypt.hash(password, 10);
+
+            // User create karo us tenant aur role ke saath (invite se)
+            const userRes = await pool.query(
+                `INSERT INTO users (tenant_id, name, email, password_hash, role) 
+                 VALUES ($1, $2, $3, $4, $5) 
+                 RETURNING id, name, email, role, tenant_id`,
+                [invite.tenant_id, name, email, hashedPassword, invite.role]
+            );
+
+            // Invite accepted mark karo
+            await pool.query(
+                'UPDATE invites SET status = $1 WHERE id = $2',
+                ['accepted', invite.id]
+            );
+
+            // Activity log
+            await pool.query(
+                `INSERT INTO activities (tenant_id, user_id, action, entity_type) 
+                 VALUES ($1, $2, $3, $4)`,
+                [invite.tenant_id, userRes.rows[0].id, `${name} joined as ${invite.role}`, 'User']
+            );
+
+            console.log(`✅ ${email} joined as ${invite.role}`);
+
+            return res.status(201).json({
+                success: true,
+                message: `Welcome! You joined as ${invite.role}`,
+                user: userRes.rows[0],
+                tenantId: invite.tenant_id
+            });
+        }
+
+        // ========== NORMAL REGISTRATION (Company create) ==========
+        if (!organizationName) {
+            return res.status(400).json({ message: 'Organization name is required' });
         }
 
         const existingUser = await pool.query('SELECT * FROM users WHERE email = $1', [email]);
@@ -53,6 +117,46 @@ router.post('/register', async (req, res) => {
     } catch (error) {
         await pool.query('ROLLBACK');
         console.error('Register Error:', error);
+        res.status(500).json({ message: 'Internal server error' });
+    }
+});
+
+// ============================================
+// PLATFORM OWNER REGISTRATION (No Tenant)
+// ============================================
+router.post('/register-platform-owner', async (req, res) => {
+    try {
+        const { name, email, password } = req.body;
+        
+        if (!name || !email || !password) {
+            return res.status(400).json({ message: 'Name, email and password are required' });
+        }
+
+        const existingUser = await pool.query('SELECT * FROM users WHERE email = $1', [email]);
+        if (existingUser.rows.length > 0) {
+            return res.status(400).json({ message: 'Email already registered' });
+        }
+
+        const hashedPassword = await bcrypt.hash(password, 10);
+
+        const userRes = await pool.query(
+            `INSERT INTO users (tenant_id, name, email, password_hash, role) 
+             VALUES ($1, $2, $3, $4, $5) 
+             RETURNING id, name, email, role, tenant_id`,
+            [null, name, email, hashedPassword, 'PlatformOwner']
+        );
+
+        console.log(`👑 New Platform Owner registered: ${email}`);
+
+        res.status(201).json({
+            success: true,
+            message: 'Platform Owner account created successfully!',
+            user: userRes.rows[0],
+            tenantId: null
+        });
+
+    } catch (error) {
+        console.error('Platform Owner Register Error:', error);
         res.status(500).json({ message: 'Internal server error' });
     }
 });
@@ -165,7 +269,7 @@ router.post('/logout', async (req, res) => {
 });
 
 // ============================================
-// ✅ FORGOT PASSWORD (CONSOLE LOG - TEMPORARY)
+// FORGOT PASSWORD (Console Log)
 // ============================================
 router.post('/forgot-password', async (req, res) => {
     try {
@@ -196,15 +300,11 @@ router.post('/forgot-password', async (req, res) => {
 
         const resetLink = `http://localhost:3000/reset-password/${resetToken}`;
 
-        // ✅ TEMPORARY FIX: Email ki jagah console par link print karo
         console.log('========================================');
         console.log('🔗 RESET LINK (COPY THIS):');
         console.log(resetLink);
         console.log('========================================');
         console.log('📧 For email:', email);
-
-        // ❌ Email wali lines comment karo (abhi ke liye)
-        // await transporter.sendMail({ ... });
 
         res.json({ 
             success: true, 
