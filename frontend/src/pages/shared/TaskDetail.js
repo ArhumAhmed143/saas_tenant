@@ -22,7 +22,7 @@ export default function TaskDetail() {
     return (
       <div className="app-layout" style={{ display: 'flex' }}>
         <Sidebar />
-        <main className="main-content" style={{ marginLeft: 240, padding: 32, width: '100%' }}>
+        <main className="main-content">
           <h2>Task not found</h2>
           <Link to="/tasks" style={{ color: '#4f46e5' }}>← Back to Tasks</Link>
         </main>
@@ -45,7 +45,7 @@ export default function TaskDetail() {
   return (
     <div className="app-layout" style={{ display: 'flex', minHeight: '100vh', background: '#f1f5f9' }}>
       <Sidebar />
-      <main className="main-content" style={{ marginLeft: 240, padding: 32, width: '100%' }}>
+      <main className="main-content">
         <Link to="/tasks" style={{ color: '#4f46e5', textDecoration: 'none', fontWeight: 500 }}>← Back to Tasks</Link>
         
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start', marginTop: 16, marginBottom: 24 }}>

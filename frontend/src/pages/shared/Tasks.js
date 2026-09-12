@@ -31,7 +31,7 @@ export default function Tasks() {
   return (
     <div className="app-layout" style={{ display: 'flex', minHeight: '100vh', background: '#f1f5f9' }}>
       <Sidebar />
-      <main className="main-content" style={{ marginLeft: 240, padding: 32, width: '100%' }}>
+      <main className="main-content">
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
           <div>
             <h2 style={{ fontSize: '1.8rem', fontWeight: 700, color: '#0f172a' }}>✅ Task Board</h2>

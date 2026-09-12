@@ -95,7 +95,7 @@ export default function PlatformOwnerDashboard() {
       <Sidebar />
       <NotificationBell />
 
-      <main className="main-content" style={{ marginLeft: 240, padding: 32, paddingTop: 80, width: '100%' }}>
+      <main className="main-content has-header">
         
         <div style={{ marginBottom: 32 }}>
           <h1 style={{ fontSize: '1.8rem', fontWeight: 700, color: '#dc2626' }}>

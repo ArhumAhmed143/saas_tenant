@@ -79,7 +79,7 @@ export default function CompanyDashboard() {
       <Sidebar />
       <NotificationBell />   {/* 🆕 Bell icon - top-right corner */}
       
-      <main className="main-content" style={{ marginLeft: 240, padding: 32, width: '100%', paddingTop: 80 }}>
+      <main className="main-content has-header">
         {/* Header */}
         <div style={{ marginBottom: 32 }}>
           <h1 style={{ fontSize: '1.8rem', fontWeight: 700, color: '#4f46e5' }}>

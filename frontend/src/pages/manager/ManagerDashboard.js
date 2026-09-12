@@ -109,7 +109,7 @@ export default function ManagerDashboard() {
       <Sidebar />
       <NotificationBell />
 
-      <main className="main-content" style={{ marginLeft: 240, padding: 32, paddingTop: 80, width: '100%' }}>
+      <main className="main-content has-header">
 
         {/* Header */}
         <div style={{ marginBottom: 32 }}>

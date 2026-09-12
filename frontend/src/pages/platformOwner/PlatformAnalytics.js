@@ -47,7 +47,7 @@ export default function PlatformAnalytics() {
   return (
     <div className="app-layout" style={{ display: 'flex', minHeight: '100vh', background: '#f1f5f9' }}>
       <Sidebar />
-      <main className="main-content" style={{ marginLeft: 240, padding: 32, width: '100%' }}>
+      <main className="main-content">
         <h1 style={{ fontSize: '1.8rem', fontWeight: 700, color: '#0f172a', marginBottom: 8 }}>
           📈 Platform Analytics
         </h1>
