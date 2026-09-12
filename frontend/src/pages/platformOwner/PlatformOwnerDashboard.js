@@ -91,11 +91,11 @@ export default function PlatformOwnerDashboard() {
   const maxGrowth = Math.max(...growthData.map(d => Math.max(d.companies, d.users)), 1);
 
   return (
-    <div style={{ display: 'flex', minHeight: '100vh', background: '#f1f5f9' }}>
+    <div className="app-layout" style={{ display: 'flex', minHeight: '100vh', background: '#f1f5f9' }}>
       <Sidebar />
       <NotificationBell />
 
-      <main style={{ marginLeft: 240, padding: 32, paddingTop: 80, width: '100%' }}>
+      <main className="main-content" style={{ marginLeft: 240, padding: 32, paddingTop: 80, width: '100%' }}>
         
         <div style={{ marginBottom: 32 }}>
           <h1 style={{ fontSize: '1.8rem', fontWeight: 700, color: '#dc2626' }}>

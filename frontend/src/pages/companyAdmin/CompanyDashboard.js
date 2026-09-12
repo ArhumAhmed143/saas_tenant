@@ -75,11 +75,11 @@ export default function CompanyDashboard() {
   const maxRemaining = Math.max(...chartData.map(d => d.remaining), 1);
 
   return (
-    <div style={{ display: 'flex', minHeight: '100vh', background: '#f1f5f9' }}>
+    <div className="app-layout" style={{ display: 'flex', minHeight: '100vh', background: '#f1f5f9' }}>
       <Sidebar />
       <NotificationBell />   {/* 🆕 Bell icon - top-right corner */}
       
-      <main style={{ marginLeft: 240, padding: 32, width: '100%', paddingTop: 80 }}>
+      <main className="main-content" style={{ marginLeft: 240, padding: 32, width: '100%', paddingTop: 80 }}>
         {/* Header */}
         <div style={{ marginBottom: 32 }}>
           <h1 style={{ fontSize: '1.8rem', fontWeight: 700, color: '#4f46e5' }}>

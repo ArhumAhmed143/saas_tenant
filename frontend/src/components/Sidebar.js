@@ -1,14 +1,19 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
 import { useApp } from '../context/AppContext';
 
 export const Sidebar = () => {
   const { currentUser, logout, currentTenant } = useApp();
   const navigate = useNavigate();
+  const [isOpen, setIsOpen] = useState(false);
 
   const handleLogout = () => {
     logout();
     navigate('/login');
+  };
+
+  const closeSidebar = () => {
+    setIsOpen(false);
   };
 
   const role = currentUser?.role;
@@ -50,52 +55,76 @@ export const Sidebar = () => {
       ];
     }
 
-   // Employee (default)
-// Employee (default) — Individual level only
-return [
-  { to: '/dashboard', icon: '👤', label: 'Dashboard' },
-  { to: '/my-tasks', icon: '👤', label: 'My Tasks' },
-  { to: '/projects', icon: '📂', label: 'Projects' },
-  { to: '/my-activity', icon: '📋', label: 'My Activity' },
-];
+    // Employee (default) — Individual level only
+    return [
+      { to: '/dashboard', icon: '👤', label: 'Dashboard' },
+      { to: '/my-tasks', icon: '👤', label: 'My Tasks' },
+      { to: '/projects', icon: '📂', label: 'Projects' },
+      { to: '/my-activity', icon: '📋', label: 'My Activity' },
+    ];
   };
 
   const links = getLinksByRole();
 
   return (
-    <aside style={styles.sidebar}>
-      <div style={styles.logo}>🚀 SaaS</div>
+    <>
+      {/* Hamburger Toggle Button (Mobile Only) */}
+      <button
+        className="sidebar-toggle"
+        onClick={() => setIsOpen(!isOpen)}
+        aria-label="Toggle menu"
+      >
+        {isOpen ? '✕' : '☰'}
+      </button>
 
-      {role !== 'PlatformOwner' && currentTenant && (
-        <div style={styles.tenantBox}>
-          <label style={styles.tenantLabel}>🏢 Workspace</label>
-          <div style={styles.tenantName}>{currentTenant.name}</div>
+      {/* Overlay (Mobile Only) */}
+      <div
+        className={`sidebar-overlay ${isOpen ? 'show' : ''}`}
+        onClick={closeSidebar}
+      />
+
+      {/* Sidebar */}
+      <aside
+        className={`sidebar ${isOpen ? 'open' : ''}`}
+        style={styles.sidebar}
+      >
+        <div style={styles.logo}>🚀 SaaS</div>
+
+        {role !== 'PlatformOwner' && currentTenant && (
+          <div style={styles.tenantBox}>
+            <label style={styles.tenantLabel}>🏢 Workspace</label>
+            <div style={styles.tenantName}>{currentTenant.name}</div>
+          </div>
+        )}
+
+        <nav style={styles.nav}>
+          {links.map((link) => (
+            <NavLink
+              key={link.to}
+              to={link.to}
+              onClick={closeSidebar}
+              style={({ isActive }) => ({
+                ...styles.link,
+                ...(isActive ? styles.active : {}),
+              })}
+            >
+              {link.icon} {link.label}
+            </NavLink>
+          ))}
+        </nav>
+
+        <div style={styles.userBox}>
+          <div style={styles.avatar}>{currentUser?.name?.charAt(0)}</div>
+          <div style={styles.userInfo}>
+            <div style={styles.userName}>{currentUser?.name}</div>
+            <div style={styles.userRole}>{currentUser?.role}</div>
+          </div>
+          <button onClick={handleLogout} style={styles.logoutBtn} title="Logout">
+            🚪 Logout
+          </button>
         </div>
-      )}
-
-      <nav style={styles.nav}>
-        {links.map((link) => (
-          <NavLink 
-            key={link.to} 
-            to={link.to} 
-            style={({ isActive }) => ({ ...styles.link, ...(isActive ? styles.active : {}) })}
-          >
-            {link.icon} {link.label}
-          </NavLink>
-        ))}
-      </nav>
-
-      <div style={styles.userBox}>
-        <div style={styles.avatar}>{currentUser?.name?.charAt(0)}</div>
-        <div style={styles.userInfo}>
-          <div style={styles.userName}>{currentUser?.name}</div>
-          <div style={styles.userRole}>{currentUser?.role}</div>
-        </div>
-       <button onClick={handleLogout} style={styles.logoutBtn} title="Logout">
-  🚪 Logout
-</button>
-      </div>
-    </aside>
+      </aside>
+    </>
   );
 };
 
@@ -114,9 +143,9 @@ const styles = {
     borderRight: '1px solid #1e293b',
     zIndex: 100,
   },
-  logo: { 
-    fontSize: '1.4rem', 
-    fontWeight: 700, 
+  logo: {
+    fontSize: '1.4rem',
+    fontWeight: 700,
     color: '#818cf8',
     letterSpacing: '-0.5px',
     marginBottom: 16,
@@ -147,10 +176,10 @@ const styles = {
     overflow: 'hidden',
     textOverflow: 'ellipsis',
   },
-  nav: { 
-    flex: 1, 
-    display: 'flex', 
-    flexDirection: 'column', 
+  nav: {
+    flex: 1,
+    display: 'flex',
+    flexDirection: 'column',
     gap: 2,
     marginBottom: 12,
   },
@@ -162,9 +191,9 @@ const styles = {
     fontSize: '0.9rem',
     transition: 'all 0.15s',
   },
-  active: { 
-    background: '#1e293b', 
-    color: 'white' 
+  active: {
+    background: '#1e293b',
+    color: 'white',
   },
   userBox: {
     marginTop: 'auto',
@@ -187,24 +216,24 @@ const styles = {
     flexShrink: 0,
   },
   userInfo: { flex: 1, minWidth: 0 },
-  userName: { 
-    fontSize: '0.8rem', 
-    fontWeight: 500, 
-    whiteSpace: 'nowrap', 
-    overflow: 'hidden', 
-    textOverflow: 'ellipsis' 
+  userName: {
+    fontSize: '0.8rem',
+    fontWeight: 500,
+    whiteSpace: 'nowrap',
+    overflow: 'hidden',
+    textOverflow: 'ellipsis',
   },
   userRole: { fontSize: '0.65rem', color: '#64748b' },
-logoutBtn: {
-  background: '#dc2626',
-  color: 'white',
-  border: 'none',
-  padding: '6px 12px',
-  borderRadius: 6,
-  fontSize: '0.75rem',
-  fontWeight: 600,
-  cursor: 'pointer',
-  whiteSpace: 'nowrap',
-  transition: 'background 0.2s',
-}
+  logoutBtn: {
+    background: '#dc2626',
+    color: 'white',
+    border: 'none',
+    padding: '6px 12px',
+    borderRadius: 6,
+    fontSize: '0.75rem',
+    fontWeight: 600,
+    cursor: 'pointer',
+    whiteSpace: 'nowrap',
+    transition: 'background 0.2s',
+  },
 };

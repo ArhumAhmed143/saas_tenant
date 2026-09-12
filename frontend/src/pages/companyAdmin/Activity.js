@@ -4,7 +4,7 @@ import { Sidebar } from '../../components/Sidebar';
 
 export default function Activity() {
   const { activities, users } = useApp();
-  
+
   const [searchTerm, setSearchTerm] = useState('');
   const [filterUser, setFilterUser] = useState('all');
   const [filterType, setFilterType] = useState('all');
@@ -45,7 +45,7 @@ export default function Activity() {
       const now = new Date();
       const past = new Date(timestamp);
       if (isNaN(past.getTime())) return 'Just now';
-      
+
       const diffMs = now - past;
       const diffSec = Math.floor(diffMs / 1000);
       const diffMin = Math.floor(diffSec / 60);
@@ -78,10 +78,10 @@ export default function Activity() {
   const entityTypes = ['all', 'Project', 'Task', 'Sprint', 'Comment', 'Organization', 'User', 'General'];
 
   return (
-    <div style={{ display: 'flex', minHeight: '100vh', background: '#f1f5f9' }}>
+    <div className="app-layout" style={{ display: 'flex', minHeight: '100vh', background: '#f1f5f9' }}>
       <Sidebar />
-      <main style={{ marginLeft: 240, padding: 32, width: '100%' }}>
-        
+      <main className="main-content" style={{ marginLeft: 240, padding: 32, width: '100%' }}>
+
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
           <h2 style={{ fontSize: '1.8rem', fontWeight: 700, color: '#0f172a' }}>📋 Activity Log</h2>
           <span style={{ color: '#64748b', fontSize: '0.9rem' }}>
@@ -91,10 +91,10 @@ export default function Activity() {
         <p style={{ color: '#64748b', marginBottom: 24 }}>Track all actions performed across your organization</p>
 
         {/* Filters */}
-        <div style={{ 
-          background: 'white', 
-          padding: '16px 20px', 
-          borderRadius: 16, 
+        <div style={{
+          background: 'white',
+          padding: '16px 20px',
+          borderRadius: 16,
           border: '1px solid #e2e8f0',
           display: 'flex',
           flexWrap: 'wrap',
@@ -103,17 +103,17 @@ export default function Activity() {
           alignItems: 'center'
         }}>
           <div style={{ flex: 2, minWidth: 200 }}>
-            <input 
-              value={searchTerm} 
-              onChange={(e) => setSearchTerm(e.target.value)} 
+            <input
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
               placeholder="🔍 Search activities..."
-              style={{ width: '100%', padding: '8px 14px', borderRadius: 8, border: '1px solid #e2e8f0', fontSize: '0.9rem' }} 
+              style={{ width: '100%', padding: '8px 14px', borderRadius: 8, border: '1px solid #e2e8f0', fontSize: '0.9rem' }}
             />
           </div>
 
           <div style={{ flex: 1, minWidth: 150 }}>
-            <select 
-              value={filterUser} 
+            <select
+              value={filterUser}
               onChange={(e) => setFilterUser(e.target.value)}
               style={{ width: '100%', padding: '8px 14px', borderRadius: 8, border: '1px solid #e2e8f0', background: 'white', fontSize: '0.9rem' }}
             >
@@ -125,8 +125,8 @@ export default function Activity() {
           </div>
 
           <div style={{ flex: 1, minWidth: 150 }}>
-            <select 
-              value={filterType} 
+            <select
+              value={filterType}
               onChange={(e) => setFilterType(e.target.value)}
               style={{ width: '100%', padding: '8px 14px', borderRadius: 8, border: '1px solid #e2e8f0', background: 'white', fontSize: '0.9rem' }}
             >
@@ -139,7 +139,7 @@ export default function Activity() {
           </div>
 
           {(searchTerm || filterUser !== 'all' || filterType !== 'all') && (
-            <button 
+            <button
               onClick={() => { setSearchTerm(''); setFilterUser('all'); setFilterType('all'); }}
               style={{ padding: '6px 14px', background: '#e2e8f0', border: 'none', borderRadius: 6, cursor: 'pointer', fontSize: '0.8rem', fontWeight: 500, color: '#64748b' }}
             >
@@ -168,7 +168,7 @@ export default function Activity() {
               const user = users.find(u => u.id === (act.user_id || act.userId));
               const relativeTime = getRelativeTime(act.created_at || act.createdAt);
               const fullDate = act.created_at || act.createdAt || 'Unknown';
-              
+
               return (
                 <div key={act.id || Math.random()} style={{
                   background: 'white',

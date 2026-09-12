@@ -47,9 +47,9 @@ export default function MyActivity() {
   };
 
   return (
-    <div style={{ display: 'flex', minHeight: '100vh', background: '#f1f5f9' }}>
+    <div className="app-layout" style={{ display: 'flex', minHeight: '100vh', background: '#f1f5f9' }}>
       <Sidebar />
-      <main style={{ marginLeft: 240, padding: 32, width: '100%' }}>
+      <main className="main-content" style={{ marginLeft: 240, padding: 32, width: '100%' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
           <h1 style={{ fontSize: '1.8rem', fontWeight: 700, color: '#22c55e' }}>
             📋 My Activity

@@ -105,11 +105,11 @@ export default function ManagerDashboard() {
   });
 
   return (
-    <div style={{ display: 'flex', minHeight: '100vh', background: '#f1f5f9' }}>
+    <div className="app-layout" style={{ display: 'flex', minHeight: '100vh', background: '#f1f5f9' }}>
       <Sidebar />
       <NotificationBell />
 
-      <main style={{ marginLeft: 240, padding: 32, paddingTop: 80, width: '100%' }}>
+      <main className="main-content" style={{ marginLeft: 240, padding: 32, paddingTop: 80, width: '100%' }}>
 
         {/* Header */}
         <div style={{ marginBottom: 32 }}>

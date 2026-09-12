@@ -19,9 +19,9 @@ export default function ProjectDetail() {
 
   if (!project) {
     return (
-      <div style={{ display: 'flex' }}>
+      <div className="app-layout" style={{ display: 'flex' }}>
         <Sidebar />
-        <main style={{ marginLeft: 240, padding: 32, width: '100%' }}>
+        <main className="main-content" style={{ marginLeft: 240, padding: 32, width: '100%' }}>
           <h2>Project not found</h2>
           <Link to="/projects">← Back to Projects</Link>
         </main>
@@ -30,9 +30,9 @@ export default function ProjectDetail() {
   }
 
   return (
-    <div style={{ display: 'flex', minHeight: '100vh', background: '#f1f5f9' }}>
+    <div className="app-layout" style={{ display: 'flex', minHeight: '100vh', background: '#f1f5f9' }}>
       <Sidebar />
-      <main style={{ marginLeft: 240, padding: 32, width: '100%' }}>
+      <main className="main-content" style={{ marginLeft: 240, padding: 32, width: '100%' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
           <div>
             <Link to="/projects" style={{ color: 'var(--primary)', textDecoration: 'none' }}>← Back to Projects</Link>

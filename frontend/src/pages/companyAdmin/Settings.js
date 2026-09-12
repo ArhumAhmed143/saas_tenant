@@ -80,9 +80,9 @@ export default function Settings() {
   const isAdmin = currentUser?.role === 'Admin';
 
   return (
-    <div style={{ display: 'flex', minHeight: '100vh', background: '#f1f5f9' }}>
+    <div className="app-layout" style={{ display: 'flex', minHeight: '100vh', background: '#f1f5f9' }}>
       <Sidebar />
-      <main style={{ marginLeft: 240, padding: 32, width: '100%' }}>
+      <main className="main-content" style={{ marginLeft: 240, padding: 32, width: '100%' }}>
         
         <h2 style={{ fontSize: '1.8rem', fontWeight: 700, color: '#0f172a', marginBottom: 8 }}>⚙️ Settings</h2>
         <p style={{ color: '#64748b', marginBottom: 32 }}>Manage your organization profile and team</p>
