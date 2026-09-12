@@ -1,6 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
 import { useApp } from '../context/AppContext';
-import axios from 'axios';
 import api from '../api';
 
 export default function NotificationBell() {
@@ -29,10 +28,7 @@ export default function NotificationBell() {
 
   const fetchNotifications = async () => {
     try {
-      const token = localStorage.getItem('accessToken');
-      const res = await api.get('/api/notifications');{
-
-      }
+      const res = await api.get('/api/notifications');
       setNotifications(res.data);
     } catch (err) {
       console.error('Notifications error:', err);

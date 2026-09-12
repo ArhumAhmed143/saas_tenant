@@ -21,12 +21,13 @@ const api = axios.create({
 });
 
 // ============================================
-// Request Interceptor (Optional but recommended)
+// Request Interceptor
 // ============================================
-// Agar JWT token localStorage mein hai to automatically bhejega
+// JWT token localStorage se utha kar automatically bhejega
 api.interceptors.request.use(
   (config) => {
-    const token = localStorage.getItem('token');
+    // ✅ 'accessToken' use karein (AppContext.js ke saath match)
+    const token = localStorage.getItem('accessToken');
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
@@ -36,7 +37,7 @@ api.interceptors.request.use(
 );
 
 // ============================================
-// Response Interceptor (Optional)
+// Response Interceptor
 // ============================================
 // Agar token expire ho jaye (401) to user ko logout kar dega
 api.interceptors.response.use(
@@ -44,7 +45,8 @@ api.interceptors.response.use(
   (error) => {
     if (error.response?.status === 401) {
       // Token expire - logout
-      localStorage.removeItem('token');
+      localStorage.removeItem('accessToken');
+      localStorage.removeItem('refreshToken');
       localStorage.removeItem('user');
       // Agar login page pe nahi hain to redirect
       if (window.location.pathname !== '/login') {

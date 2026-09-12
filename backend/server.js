@@ -32,23 +32,24 @@ app.use(passport.initialize());
 app.use(passport.session());
 
 // ========== 2. IMPORT ALL ROUTES ==========
-const authRoutes = require('./routes/auth');
-const projectRoutes = require('./routes/projects');
-const sprintRoutes = require('./routes/sprints');
-const taskRoutes = require('./routes/tasks');
-const userRoutes = require('./routes/users');
-const activityRoutes = require('./routes/activities');
-const socialRoutes = require('./routes/social');
-const departmentRoutes = require('./routes/departments');
-const teamRoutes = require('./routes/teams');
-const epicRoutes = require('./routes/epics');
-const burndownRoutes = require('./routes/burndown');
-const tenantRoutes = require('./routes/tenants');
-const platformRoutes = require('./routes/platform');
-const notificationRoutes = require('./routes/notifications');
-const inviteRoutes = require('./routes/invite');
-const commentRoutes = require('./routes/comments');
-const subtaskRoutes = require('./routes/subtasks');
+const authRoutes = require('./routes/auth/auth');
+const socialRoutes = require('./routes/auth/social');
+const inviteRoutes = require('./routes/auth/invite');
+const platformRoutes = require('./routes/platform/platform');
+const tenantsRoutes = require('./routes/tenant/tenants');
+const tenantRoutes = require('./routes/tenant/tenant');
+const userRoutes = require('./routes/tenant/users');
+const departmentRoutes = require('./routes/tenant/departments');
+const projectRoutes = require('./routes/work/projects');
+const sprintRoutes = require('./routes/work/sprints');
+const taskRoutes = require('./routes/work/tasks');
+const subtaskRoutes = require('./routes/work/subtasks');
+const epicRoutes = require('./routes/work/epics');
+const commentRoutes = require('./routes/work/comments');
+const burndownRoutes = require('./routes/work/burndown');
+const teamRoutes = require('./routes/teams/teams');
+const activityRoutes = require('./routes/activity/activities');
+const notificationRoutes = require('./routes/activity/notifications');
 
 // ========== 3. USE ALL ROUTES ==========
 app.use('/api/auth', authRoutes);
@@ -61,7 +62,8 @@ app.use('/api/departments', departmentRoutes);
 app.use('/api/teams', teamRoutes);
 app.use('/api/epics', epicRoutes);
 app.use('/api/burndown', burndownRoutes);
-app.use('/api/tenants', tenantRoutes);
+app.use('/api/tenants', tenantsRoutes);
+app.use('/api/tenant', tenantRoutes);
 app.use('/api/platform', platformRoutes);
 app.use('/api/notifications', notificationRoutes);
 app.use('/api/invite', inviteRoutes);
@@ -115,7 +117,7 @@ const swaggerOptions = {
         },
         security: [{ bearerAuth: [] }],
     },
-    apis: ['./routes/*.js'],
+    apis: ['./routes/**/*.js'],
 };
 
 const swaggerDocs = swaggerJsdoc(swaggerOptions);
