@@ -11,8 +11,9 @@ const PORT = process.env.PORT || 5000;
 const allowedOrigins = [
     'http://localhost:3000',
     'http://localhost:3001',
-    'https://your-frontend-service.onrender.com',  // 👈 apni frontend URL
-    process.env.FRONTEND_URL                        // 👈 ya env se
+    'https://saas-tenant.onrender.com',              // 👈 backend ka URL
+    'https://saas-tenant-frontend.onrender.com',     // 👈 frontend ka URL (NAYA)
+    process.env.FRONTEND_URL                          // 👈 ya env se
 ].filter(Boolean);
 
 app.use(cors({
@@ -81,16 +82,16 @@ app.get('/health', async (req, res) => {
     try {
         const pool = require('./config/db');
         await pool.query('SELECT 1');
-        res.status(200).json({ 
-            status: 'ok', 
+        res.status(200).json({
+            status: 'ok',
             db: 'connected',
             time: new Date().toISOString()
         });
     } catch (err) {
-        res.status(500).json({ 
-            status: 'error', 
+        res.status(500).json({
+            status: 'error',
             db: 'disconnected',
-            message: err.message 
+            message: err.message
         });
     }
 });
