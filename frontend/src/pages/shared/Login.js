@@ -2,7 +2,6 @@ import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useApp } from '../../context/AppContext';
 import '../../styles/global.css';
-import { API_URL } from '../../api';
 
 export default function Login() {
   const [email, setEmail] = useState('');
@@ -13,6 +12,7 @@ export default function Login() {
   const [capsLock, setCapsLock] = useState(false);
   const { login, isLoading } = useApp();
   const navigate = useNavigate();
+
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -80,17 +80,6 @@ export default function Login() {
           </button>
         </form>
 
-        <div className="divider">
-          <hr /> OR <hr />
-        </div>
-
-        <a href={`${API_URL}/api/auth/google`} style={{ textDecoration: 'none' }}>
-          <button className="social-btn" style={{ marginBottom: 8 }}>
-            <span>🔵</span> Sign in with Google
-          </button>
-        </a>
-
-        {/* ✅ GitHub Button DELETE KAR DIYA */}
 
         <p style={{ textAlign: 'center', marginTop: 24, color: 'var(--gray-500)' }}>
           Don't have an account? <Link to="/register" style={{ color: 'var(--primary)', fontWeight: 600 }}>Create one</Link>

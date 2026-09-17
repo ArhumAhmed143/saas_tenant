@@ -1,8 +1,7 @@
 const express = require('express');
 const cors = require('cors');
 require('dotenv').config();
-const session = require('express-session');
-const passport = require('passport');
+
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -22,19 +21,10 @@ app.use(cors({
 }));
 app.use(express.json());
 
-app.use(session({
-    secret: process.env.SESSION_SECRET || 'your_session_secret',
-    resave: false,
-    saveUninitialized: false,
-    cookie: { secure: false }
-}));
 
-app.use(passport.initialize());
-app.use(passport.session());
 
 // ========== 2. IMPORT ALL ROUTES ==========
 const authRoutes = require('./routes/auth/auth');
-const socialRoutes = require('./routes/auth/social');
 const inviteRoutes = require('./routes/auth/invite');
 const platformRoutes = require('./routes/platform/platform');
 const tenantsRoutes = require('./routes/tenant/tenants');
@@ -70,7 +60,6 @@ app.use('/api/notifications', notificationRoutes);
 app.use('/api/invite', inviteRoutes);
 app.use('/api/comments', commentRoutes);
 app.use('/api/subtasks', subtaskRoutes);
-app.use('/auth', socialRoutes);
 
 // ========== 4. ROOT ROUTE ==========
 app.get('/', (req, res) => {

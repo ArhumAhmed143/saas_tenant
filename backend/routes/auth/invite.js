@@ -1,18 +1,17 @@
 const express = require('express');
 const crypto = require('crypto');
+const nodemailer = require('nodemailer');
 const pool = require('../../config/db');
 const auth = require('../../middleware/auth');
 const router = express.Router();
 
 // ============================================
 // SEND INVITE (Sirf Admin/Manager)
-// Yeh naya invite create karta hai + token generate karta hai
 // ============================================
 router.post('/', auth, async (req, res) => {
     try {
         const { email, role } = req.body;
 
-        // Validate
         if (!email || !role) {
             return res.status(400).json({ message: 'Email and role are required' });
         }
@@ -21,12 +20,10 @@ router.post('/', auth, async (req, res) => {
             return res.status(400).json({ message: 'Invalid role' });
         }
 
-        // Sirf Admin/Manager invite kar sakte hain
         if (req.role !== 'Admin' && req.role !== 'Manager') {
             return res.status(403).json({ message: 'Only Admin or Manager can invite members' });
         }
 
-        // Check karo ke yeh email already is tenant mein hai ya nahi
         const existingUser = await pool.query(
             'SELECT id FROM users WHERE email = $1 AND tenant_id = $2',
             [email, req.tenantId]
@@ -38,7 +35,6 @@ router.post('/', auth, async (req, res) => {
             });
         }
 
-        // Check karo ke koi pending invite already exist karta hai ya nahi
         const existingInvite = await pool.query(
             `SELECT id FROM invites 
              WHERE email = $1 AND tenant_id = $2 
@@ -52,14 +48,11 @@ router.post('/', auth, async (req, res) => {
             });
         }
 
-        // Unique token generate karo
         const token = crypto.randomBytes(32).toString('hex');
 
-        // 7 din baad expire hoga
         const expiresAt = new Date();
         expiresAt.setDate(expiresAt.getDate() + 7);
 
-        // Insert invite
         const result = await pool.query(
             `INSERT INTO invites (tenant_id, invited_by, email, role, token, expires_at) 
              VALUES ($1, $2, $3, $4, $5, $6) 
@@ -67,29 +60,83 @@ router.post('/', auth, async (req, res) => {
             [req.tenantId, req.userId, email, role, token, expiresAt]
         );
 
-        // Tenant name nikalo
         const tenantRes = await pool.query('SELECT name FROM tenants WHERE id = $1', [req.tenantId]);
         const tenantName = tenantRes.rows[0]?.name || 'Company';
 
-        // Invite link banao
+        const senderRes = await pool.query('SELECT name FROM users WHERE id = $1', [req.userId]);
+        const senderName = senderRes.rows[0]?.name || 'A team member';
+
         const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
         const inviteLink = `${frontendUrl}/register?invite=${token}`;
 
-        // Activity log
         await pool.query(
             `INSERT INTO activities (tenant_id, user_id, action, entity_type) 
              VALUES ($1, $2, $3, $4)`,
             [req.tenantId, req.userId, `Invited ${email} as ${role}`, 'Invite']
         );
 
-        console.log('========================================');
-        console.log('📨 INVITE CREATED');
-        console.log('   Email:', email);
-        console.log('   Role:', role);
-        console.log('   Company:', tenantName);
-        console.log('   🔗 Invite Link:');
-        console.log('   ' + inviteLink);
-        console.log('========================================');
+        // ========== GMAIL SMTP EMAIL ==========
+        try {
+            const transporter = nodemailer.createTransport({
+                host: 'smtp.gmail.com',
+                port: 465,
+                secure: true,
+                auth: {
+                    user: process.env.EMAIL_USER,
+                    pass: process.env.EMAIL_PASS,
+                },
+            });
+
+            const info = await transporter.sendMail({
+                from: `"${tenantName}" <${process.env.EMAIL_USER}>`,
+                to: email,
+                subject: `📨 Invitation to join ${tenantName}`,
+                html: `
+<div style="font-family: 'Segoe UI', Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+  <div style="background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%); padding: 30px; border-radius: 12px 12px 0 0; text-align: center;">
+    <h1 style="color: white; margin: 0; font-size: 24px;">🚀 You're Invited!</h1>
+  </div>
+  
+  <div style="background: #f8fafc; padding: 30px; border-radius: 0 0 12px 12px; border: 1px solid #e2e8f0;">
+    <p style="font-size: 16px; color: #0f172a; line-height: 1.6;">
+      Hello,
+    </p>
+    <p style="font-size: 16px; color: #0f172a; line-height: 1.6;">
+      <strong>${senderName}</strong> has invited you to join <strong style="color: #4f46e5;">${tenantName}</strong> as a <strong style="color: #4f46e5;">${role}</strong>.
+    </p>
+    
+    <div style="text-align: center; margin: 30px 0;">
+      <a href="${inviteLink}" style="display: inline-block; padding: 14px 40px; background: #4f46e5; color: white; text-decoration: none; border-radius: 8px; font-weight: 600; font-size: 16px;">
+        ✨ Create Your Account
+      </a>
+    </div>
+    
+    <p style="font-size: 14px; color: #64748b;">
+      Already have an account? <a href="${frontendUrl}/login" style="color: #4f46e5;">Sign in here</a>
+    </p>
+    
+    <hr style="border: none; border-top: 1px solid #e2e8f0; margin: 24px 0;" />
+    <p style="font-size: 12px; color: #94a3b8; text-align: center;">
+      Yeh link 7 din mein expire ho jayegi. Sent from ${tenantName} via SaaS Platform
+    </p>
+  </div>
+</div>
+                `
+            });
+
+            console.log('========================================');
+            console.log('📧 INVITE EMAIL SENT via Gmail SMTP');
+            console.log('   To:', email);
+            console.log('   Role:', role);
+            console.log('   Company:', tenantName);
+            console.log('   Message ID:', info.messageId);
+            console.log('   Invite Link:', inviteLink);
+            console.log('========================================');
+
+        } catch (emailError) {
+            console.error('❌ Gmail SMTP Error:', emailError.message);
+            console.log('🔗 Invite Link (debug):', inviteLink);
+        }
 
         res.status(201).json({
             success: true,

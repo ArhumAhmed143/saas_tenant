@@ -1,5 +1,4 @@
 const auth = require('./auth/auth');
-const social = require('./auth/social');
 const invite = require('./auth/invite');
 const platform = require('./platform/platform');
 const tenants = require('./tenant/tenants');
@@ -19,7 +18,6 @@ const notifications = require('./activity/notifications');
 
 module.exports = {
   auth,
-  social,
   invite,
   platform,
   tenants,

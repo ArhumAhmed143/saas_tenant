@@ -18,53 +18,83 @@ export const Sidebar = () => {
 
   const role = currentUser?.role;
 
-  const getLinksByRole = () => {
+  const getSectionsByRole = () => {
     if (role === 'PlatformOwner') {
       return [
-        { to: '/dashboard', icon: '👑', label: 'Platform Overview' },
-        { to: '/platform/tenants', icon: '🏢', label: 'All Companies' },
-        { to: '/platform/users', icon: '👥', label: 'All Users' },
-        { to: '/platform/analytics', icon: '📈', label: 'Platform Growth' },
-        { to: '/platform/activity', icon: '📋', label: 'Platform Activity' },
+        {
+          title: 'PLATFORM MANAGEMENT',
+          links: [
+            { to: '/dashboard', icon: '👑', label: 'Platform Overview' },
+            { to: '/platform/tenants', icon: '🏢', label: 'All Companies' },
+            { to: '/platform/users', icon: '👥', label: 'All Users' },
+            { to: '/platform/analytics', icon: '📈', label: 'Platform Growth' },
+            { to: '/platform/activity', icon: '📋', label: 'Platform Activity' },
+          ]
+        }
       ];
     }
 
     if (role === 'Admin') {
       return [
-        { to: '/dashboard', icon: '🏢', label: 'Dashboard' },
-        { to: '/my-tasks', icon: '👤', label: 'My Tasks' },
-        { to: '/projects', icon: '📂', label: 'Projects' },
-        { to: '/tasks', icon: '✅', label: 'Tasks' },
-        { to: '/sprints', icon: '🏃', label: 'Sprints' },
-        { to: '/team-analytics', icon: '📊', label: 'Team Analytics' },
-        { to: '/organization', icon: '👥', label: 'Organization' },
-        { to: '/activity', icon: '📋', label: 'Activity' },
-        { to: '/settings', icon: '⚙️', label: 'Settings' },
+        {
+          title: 'MAIN',
+          links: [
+            { to: '/dashboard', icon: '🏢', label: 'Dashboard' },
+            { to: '/my-tasks', icon: '👤', label: 'My Tasks' },
+            { to: '/projects', icon: '📂', label: 'Projects' },
+            { to: '/tasks', icon: '✅', label: 'Tasks' },
+            { to: '/sprints', icon: '🏃', label: 'Sprints' },
+          ]
+        },
+        {
+          title: 'ADMINISTRATION',
+          links: [
+            { to: '/team-analytics', icon: '📊', label: 'Team Analytics' },
+            { to: '/organization', icon: '👥', label: 'Organization' },
+            { to: '/activity', icon: '📋', label: 'Activity' },
+            { to: '/settings', icon: '⚙️', label: 'Settings' },
+          ]
+        }
       ];
     }
 
     if (role === 'Manager') {
       return [
-        { to: '/dashboard', icon: '👨‍💼', label: 'Dashboard' },
-        { to: '/my-tasks', icon: '👤', label: 'My Tasks' },
-        { to: '/projects', icon: '📂', label: 'Projects' },
-        { to: '/tasks', icon: '✅', label: 'Tasks' },
-        { to: '/sprints', icon: '🏃', label: 'Sprints' },
-        { to: '/team-analytics', icon: '📊', label: 'Team Analytics' },
-        { to: '/activity', icon: '📋', label: 'Activity' },
+        {
+          title: 'MAIN',
+          links: [
+            { to: '/dashboard', icon: '👨‍💼', label: 'Dashboard' },
+            { to: '/my-tasks', icon: '👤', label: 'My Tasks' },
+            { to: '/projects', icon: '📂', label: 'Projects' },
+            { to: '/tasks', icon: '✅', label: 'Tasks' },
+            { to: '/sprints', icon: '🏃', label: 'Sprints' },
+          ]
+        },
+        {
+          title: 'INSIGHTS',
+          links: [
+            { to: '/team-analytics', icon: '📊', label: 'Team Analytics' },
+            { to: '/activity', icon: '📋', label: 'Activity' },
+          ]
+        }
       ];
     }
 
-    // Employee (default) — Individual level only
+    // Employee
     return [
-      { to: '/dashboard', icon: '👤', label: 'Dashboard' },
-      { to: '/my-tasks', icon: '👤', label: 'My Tasks' },
-      { to: '/projects', icon: '📂', label: 'Projects' },
-      { to: '/my-activity', icon: '📋', label: 'My Activity' },
+      {
+        title: 'MY WORKSPACE',
+        links: [
+          { to: '/dashboard', icon: '👤', label: 'Dashboard' },
+          { to: '/my-tasks', icon: '👤', label: 'My Tasks' },
+          { to: '/projects', icon: '📂', label: 'Projects' },
+          { to: '/my-activity', icon: '📋', label: 'My Activity' },
+        ]
+      }
     ];
   };
 
-  const links = getLinksByRole();
+  const sections = getSectionsByRole();
 
   return (
     <>
@@ -88,38 +118,83 @@ export const Sidebar = () => {
         className={`sidebar ${isOpen ? 'open' : ''}`}
         style={styles.sidebar}
       >
-        <div style={styles.logo}>🚀 SaaS</div>
+        {/* LOGO WITH SVG */}
+        <div style={styles.logoHeader}>
+          <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
+            <rect width="32" height="32" rx="8" fill="url(#gradient)"/>
+            <path d="M10 16L16 10L22 16L16 22L10 16Z" stroke="white" strokeWidth="2" strokeLinejoin="round"/>
+            <circle cx="16" cy="16" r="3" fill="white"/>
+            <defs>
+              <linearGradient id="gradient" x1="0" y1="0" x2="32" y2="32">
+                <stop stopColor="#4f46e5"/>
+                <stop offset="1" stopColor="#7c3aed"/>
+              </linearGradient>
+            </defs>
+          </svg>
+          <span style={styles.logoText}>SaaS</span>
+        </div>
 
+        {/* WORKSPACE BADGE */}
         {role !== 'PlatformOwner' && currentTenant && (
           <div style={styles.tenantBox}>
-            <label style={styles.tenantLabel}>🏢 Workspace</label>
-            <div style={styles.tenantName}>{currentTenant.name}</div>
+            <div style={styles.tenantIcon}>🏢</div>
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <label style={styles.tenantLabel}>WORKSPACE</label>
+              <div style={styles.tenantName}>{currentTenant.name}</div>
+            </div>
           </div>
         )}
 
+        {role === 'PlatformOwner' && (
+          <div style={styles.platformBadge}>
+            <span style={{ fontSize: '0.9rem' }}>👑</span>
+            <span style={{ fontSize: '0.75rem', fontWeight: 700, color: '#f87171', letterSpacing: '0.5px' }}>
+              PLATFORM ADMIN
+            </span>
+          </div>
+        )}
+
+        {/* NAVIGATION SECTIONS */}
         <nav style={styles.nav}>
-          {links.map((link) => (
-            <NavLink
-              key={link.to}
-              to={link.to}
-              onClick={closeSidebar}
-              style={({ isActive }) => ({
-                ...styles.link,
-                ...(isActive ? styles.active : {}),
-              })}
-            >
-              {link.icon} {link.label}
-            </NavLink>
+          {sections.map((section, sIdx) => (
+            <div key={sIdx} style={{ marginBottom: 16 }}>
+              <div style={styles.sectionHeader}>{section.title}</div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+                {section.links.map((link) => (
+                  <NavLink
+                    key={link.to}
+                    to={link.to}
+                    onClick={closeSidebar}
+                    style={({ isActive }) => ({
+                      ...styles.link,
+                      ...(isActive ? styles.active : {}),
+                    })}
+                  >
+                    <span style={{ fontSize: '1.1rem' }}>{link.icon}</span>
+                    <span>{link.label}</span>
+                  </NavLink>
+                ))}
+              </div>
+            </div>
           ))}
         </nav>
 
+        {/* USER PROFILE BOX WITH PROFESSIONAL LOGOUT BUTTON */}
         <div style={styles.userBox}>
-          <div style={styles.avatar}>{currentUser?.name?.charAt(0)}</div>
+          <div style={styles.avatar}>
+            {currentUser?.name ? currentUser.name.charAt(0).toUpperCase() : 'U'}
+          </div>
           <div style={styles.userInfo}>
-            <div style={styles.userName}>{currentUser?.name}</div>
+            <div style={styles.userName}>{currentUser?.name || 'User'}</div>
             <div style={styles.userRole}>{currentUser?.role}</div>
           </div>
-          <button onClick={handleLogout} style={styles.logoutBtn} title="Logout">
+          <button
+            onClick={handleLogout}
+            style={styles.logoutBtn}
+            onMouseEnter={(e) => (e.currentTarget.style.background = '#b91c1c')}
+            onMouseLeave={(e) => (e.currentTarget.style.background = '#dc2626')}
+            title="Logout"
+          >
             🚪 Logout
           </button>
         </div>
@@ -142,98 +217,135 @@ const styles = {
     padding: '20px 16px 16px 16px',
     borderRight: '1px solid #1e293b',
     zIndex: 100,
+    fontFamily: "'Inter', -apple-system, sans-serif",
   },
-  logo: {
-    fontSize: '1.4rem',
-    fontWeight: 700,
-    color: '#818cf8',
-    letterSpacing: '-0.5px',
-    marginBottom: 16,
+  logoHeader: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: 12,
+    marginBottom: 20,
     paddingBottom: 12,
     borderBottom: '1px solid #1e293b',
   },
+  logoText: {
+    fontSize: '1.3rem',
+    fontWeight: 800,
+    color: '#ffffff',
+    letterSpacing: '-0.5px',
+  },
   tenantBox: {
-    marginBottom: 16,
-    padding: '8px 12px',
+    marginBottom: 20,
+    padding: '10px 12px',
     background: '#1e293b',
-    borderRadius: 8,
+    borderRadius: 10,
     border: '1px solid #334155',
+    display: 'flex',
+    alignItems: 'center',
+    gap: 10,
+  },
+  tenantIcon: {
+    fontSize: '1.1rem',
   },
   tenantLabel: {
     display: 'block',
     fontSize: '0.6rem',
-    fontWeight: 600,
+    fontWeight: 700,
     color: '#94a3b8',
-    textTransform: 'uppercase',
-    letterSpacing: '0.5px',
-    marginBottom: 4,
+    letterSpacing: '0.6px',
+    marginBottom: 2,
   },
   tenantName: {
-    fontSize: '0.9rem',
+    fontSize: '0.85rem',
     fontWeight: 600,
     color: 'white',
     whiteSpace: 'nowrap',
     overflow: 'hidden',
     textOverflow: 'ellipsis',
   },
-  nav: {
-    flex: 1,
-    display: 'flex',
-    flexDirection: 'column',
-    gap: 2,
-    marginBottom: 12,
-  },
-  link: {
+  platformBadge: {
+    marginBottom: 20,
     padding: '8px 12px',
-    borderRadius: 6,
-    textDecoration: 'none',
-    color: '#94a3b8',
-    fontSize: '0.9rem',
-    transition: 'all 0.15s',
-  },
-  active: {
-    background: '#1e293b',
-    color: 'white',
-  },
-  userBox: {
-    marginTop: 'auto',
-    paddingTop: 12,
-    borderTop: '1px solid #1e293b',
+    background: 'rgba(220, 38, 38, 0.15)',
+    borderRadius: 8,
+    border: '1px solid rgba(239, 68, 68, 0.3)',
     display: 'flex',
     alignItems: 'center',
     gap: 8,
   },
-  avatar: {
-    width: 32,
-    height: 32,
-    borderRadius: '50%',
+  nav: {
+    flex: 1,
+    overflowY: 'auto',
+    display: 'flex',
+    flexDirection: 'column',
+  },
+  sectionHeader: {
+    fontSize: '0.65rem',
+    fontWeight: 700,
+    color: '#64748b',
+    letterSpacing: '0.8px',
+    marginBottom: 8,
+    paddingLeft: 8,
+  },
+  link: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: 10,
+    padding: '9px 12px',
+    borderRadius: 8,
+    textDecoration: 'none',
+    color: '#94a3b8',
+    fontSize: '0.88rem',
+    fontWeight: 500,
+    transition: 'all 0.2s ease',
+  },
+  active: {
     background: '#4f46e5',
+    color: '#ffffff',
+    fontWeight: 600,
+    boxShadow: '0 4px 12px rgba(79, 70, 229, 0.3)',
+  },
+  userBox: {
+    marginTop: 'auto',
+    paddingTop: 14,
+    borderTop: '1px solid #1e293b',
+    display: 'flex',
+    alignItems: 'center',
+    gap: 10,
+  },
+  avatar: {
+    width: 34,
+    height: 34,
+    borderRadius: '50%',
+    background: 'linear-gradient(135deg, #4f46e5, #7c3aed)',
+    color: 'white',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
-    fontWeight: 600,
-    fontSize: '0.8rem',
+    fontWeight: 700,
+    fontSize: '0.85rem',
     flexShrink: 0,
   },
   userInfo: { flex: 1, minWidth: 0 },
   userName: {
-    fontSize: '0.8rem',
-    fontWeight: 500,
+    fontSize: '0.85rem',
+    fontWeight: 600,
+    color: '#f8fafc',
     whiteSpace: 'nowrap',
     overflow: 'hidden',
     textOverflow: 'ellipsis',
   },
-  userRole: { fontSize: '0.65rem', color: '#64748b' },
+  userRole: { fontSize: '0.7rem', color: '#94a3b8' },
   logoutBtn: {
+    padding: '6px 12px',
     background: '#dc2626',
     color: 'white',
     border: 'none',
-    padding: '6px 12px',
     borderRadius: 6,
     fontSize: '0.75rem',
     fontWeight: 600,
     cursor: 'pointer',
     whiteSpace: 'nowrap',
-    transition: 'background 0.2s',
+    transition: 'background 0.2s ease',
+    flexShrink: 0,
   },
 };

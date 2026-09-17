@@ -4,7 +4,6 @@ import Login from './pages/shared/Login';
 import Register from './pages/shared/Register';
 import ForgotPassword from './pages/shared/ForgotPassword';
 import ResetPassword from './pages/shared/ResetPassword';
-import AuthCallback from './pages/shared/AuthCallback';
 import Dashboard from './pages/shared/Dashboard';
 import MyDashboard from './pages/employee/MyDashboard';
 import TeamDashboard from './pages/manager/TeamDashboard';
@@ -32,7 +31,6 @@ function AppRoutes() {
         <Route path="/register" element={<Register />} />
         <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route path="/reset-password/:token" element={<ResetPassword />} />
-        <Route path="/auth-callback" element={<AuthCallback />} />
 
         {/* Main Dashboard */}
         <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />

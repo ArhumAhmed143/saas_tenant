@@ -1,6 +1,7 @@
 const express = require('express');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
+const nodemailer = require('nodemailer');
 const pool = require('../../config/db');
 const router = express.Router();
 
@@ -29,12 +30,10 @@ router.post('/register', async (req, res) => {
 
             const invite = inviteRes.rows[0];
 
-            // Email match karo
             if (invite.email.toLowerCase() !== email.toLowerCase()) {
                 return res.status(400).json({ message: 'Email does not match the invite' });
             }
 
-            // User check karo
             const existingUser = await pool.query('SELECT id FROM users WHERE email = $1', [email]);
             if (existingUser.rows.length > 0) {
                 return res.status(400).json({ message: 'Email already registered' });
@@ -42,7 +41,6 @@ router.post('/register', async (req, res) => {
 
             const hashedPassword = await bcrypt.hash(password, 10);
 
-            // User create karo us tenant aur role ke saath (invite se)
             const userRes = await pool.query(
                 `INSERT INTO users (tenant_id, name, email, password_hash, role) 
                  VALUES ($1, $2, $3, $4, $5) 
@@ -50,13 +48,11 @@ router.post('/register', async (req, res) => {
                 [invite.tenant_id, name, email, hashedPassword, invite.role]
             );
 
-            // Invite accepted mark karo
             await pool.query(
                 'UPDATE invites SET status = $1 WHERE id = $2',
                 ['accepted', invite.id]
             );
 
-            // Activity log
             await pool.query(
                 `INSERT INTO activities (tenant_id, user_id, action, entity_type) 
                  VALUES ($1, $2, $3, $4)`,
@@ -269,7 +265,7 @@ router.post('/logout', async (req, res) => {
 });
 
 // ============================================
-// FORGOT PASSWORD (Console Log)
+// FORGOT PASSWORD (Gmail SMTP — Real Email)
 // ============================================
 router.post('/forgot-password', async (req, res) => {
     try {
@@ -298,17 +294,67 @@ router.post('/forgot-password', async (req, res) => {
             [resetToken, user.id]
         );
 
-        const resetLink = `http://localhost:3000/reset-password/${resetToken}`;
+        const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
+        const resetLink = `${frontendUrl}/reset-password/${resetToken}`;
 
-        console.log('========================================');
-        console.log('🔗 RESET LINK (COPY THIS):');
-        console.log(resetLink);
-        console.log('========================================');
-        console.log('📧 For email:', email);
+        // ========== GMAIL SMTP EMAIL ==========
+        try {
+            const transporter = nodemailer.createTransport({
+                host: 'smtp.gmail.com',
+                port: 465,
+                secure: true,
+                auth: {
+                    user: process.env.EMAIL_USER,
+                    pass: process.env.EMAIL_PASS,
+                },
+            });
+
+            const info = await transporter.sendMail({
+                from: `"SaaS Platform" <${process.env.EMAIL_USER}>`,
+                to: email,
+                subject: '🔐 Password Reset Request',
+                html: `
+<div style="font-family: 'Segoe UI', Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+  <div style="background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%); padding: 30px; border-radius: 12px 12px 0 0; text-align: center;">
+    <h1 style="color: white; margin: 0; font-size: 24px;">🔐 Password Reset</h1>
+  </div>
+  <div style="background: #f8fafc; padding: 30px; border-radius: 0 0 12px 12px; border: 1px solid #e2e8f0;">
+    <p style="font-size: 16px; color: #0f172a; line-height: 1.6;">
+      Hello <strong>${user.name || 'User'}</strong>,
+    </p>
+    <p style="font-size: 16px; color: #0f172a; line-height: 1.6;">
+      Aap ne password reset request ki hai. Neeche button click karke naya password set karein.
+    </p>
+    <div style="text-align: center; margin: 30px 0;">
+      <a href="${resetLink}" style="display: inline-block; padding: 14px 40px; background: #4f46e5; color: white; text-decoration: none; border-radius: 8px; font-weight: 600; font-size: 16px;">
+        🔑 Reset Password
+      </a>
+    </div>
+    <hr style="border: none; border-top: 1px solid #e2e8f0; margin: 24px 0;" />
+    <p style="font-size: 12px; color: #94a3b8; text-align: center;">
+      Yeh link 1 ghante mein expire ho jayega. Agar aap ne request nahi ki, toh ignore karein.
+    </p>
+  </div>
+</div>
+                `
+            });
+
+            console.log('========================================');
+            console.log('📧 PASSWORD RESET EMAIL SENT via Gmail SMTP');
+            console.log('   To:', email);
+            console.log('   Message ID:', info.messageId);
+            console.log('   Reset Link:', resetLink);
+            console.log('========================================');
+
+        } catch (emailError) {
+            console.error('❌ Gmail SMTP Error:', emailError.message);
+            // Still log the reset link for debugging
+            console.log('🔗 Reset Link (debug):', resetLink);
+        }
 
         res.json({ 
             success: true, 
-            message: '✅ Reset link generated! Check your terminal for the link (temporary).' 
+            message: '✅ Reset link sent to your email inbox!'
         });
 
     } catch (error) {
