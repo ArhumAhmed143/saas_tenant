@@ -16,8 +16,9 @@ export default function Settings() {
   const [inviteEmail, setInviteEmail] = useState('');
   const [inviteRole, setInviteRole] = useState('Employee');
   const [isInviting, setIsInviting] = useState(false);
-  const [inviteMessage, setInviteMessage] = useState('');
+  const [inviteStatus, setInviteStatus] = useState(null); // { type: 'success' | 'warning' | 'error', text: string }
   const [inviteLink, setInviteLink] = useState('');
+  const [copied, setCopied] = useState(false);
 
   useEffect(() => {
     if (currentTenant?.name && currentTenant.name !== 'Loading...') {
@@ -43,19 +44,31 @@ export default function Settings() {
   const handleInvite = async () => {
     if (!inviteEmail) return alert('Please enter email');
     setIsInviting(true);
-    setInviteMessage('');
+    setInviteStatus(null);
     setInviteLink('');
+    setCopied(false);
 
     try {
       const result = await sendInvite(inviteEmail, inviteRole);
-      setInviteMessage(`✅ ${result.message}`);
+      if (result.emailSent) {
+        setInviteStatus({ type: 'success', text: `✅ ${result.message}` });
+      } else {
+        setInviteStatus({ type: 'warning', text: `⚠️ ${result.message}` });
+      }
       setInviteLink(result.inviteLink);
       setInviteEmail('');
     } catch (error) {
-      setInviteMessage(`❌ ${error.message}`);
+      setInviteStatus({ type: 'error', text: `❌ ${error.message}` });
     } finally {
       setIsInviting(false);
     }
+  };
+
+  const handleCopyLink = () => {
+    if (!inviteLink) return;
+    navigator.clipboard.writeText(inviteLink);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
   };
 
   const handleRemoveMember = async (id, name) => {
@@ -162,16 +175,43 @@ export default function Settings() {
           <div style={{ background: 'white', padding: 24, borderRadius: 16, border: '1px solid #e2e8f0', marginBottom: 24 }}>
             <h4 style={{ marginBottom: 16, color: '#0f172a' }}>📨 Invite New Member</h4>
 
-            {inviteMessage && (
-              <div style={{ padding: '12px 16px', borderRadius: 8, marginBottom: 16, background: inviteMessage.startsWith('✅') ? '#dcfce7' : '#fee2e2', color: inviteMessage.startsWith('✅') ? '#16a34a' : '#dc2626', border: inviteMessage.startsWith('✅') ? '1px solid #bbf7d0' : '1px solid #fecaca' }}>
-                {inviteMessage}
+            {inviteStatus && (
+              <div style={{
+                padding: '12px 16px',
+                borderRadius: 8,
+                marginBottom: 16,
+                fontSize: '0.85rem',
+                lineHeight: '1.5',
+                background: inviteStatus.type === 'success' ? '#dcfce7' : (inviteStatus.type === 'warning' ? '#fef3c7' : '#fee2e2'),
+                color: inviteStatus.type === 'success' ? '#166534' : (inviteStatus.type === 'warning' ? '#92400e' : '#991b1b'),
+                border: inviteStatus.type === 'success' ? '1px solid #bbf7d0' : (inviteStatus.type === 'warning' ? '1px solid #fde68a' : '1px solid #fecaca')
+              }}>
+                {inviteStatus.text}
               </div>
             )}
 
             {inviteLink && (
-              <div style={{ padding: 12, background: '#f0f9ff', border: '1px solid #bae6fd', borderRadius: 8, marginBottom: 16 }}>
-                <div style={{ fontSize: '0.8rem', fontWeight: 600, color: '#0369a1', marginBottom: 6 }}>🔗 Invite Link (copy karke bhejo):</div>
-                <div style={{ fontSize: '0.75rem', color: '#0c4a6e', wordBreak: 'break-all', background: 'white', padding: 8, borderRadius: 4, border: '1px solid #e0f2fe' }}>
+              <div style={{ padding: 14, background: '#f0f9ff', border: '1px solid #bae6fd', borderRadius: 10, marginBottom: 16 }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
+                  <span style={{ fontSize: '0.85rem', fontWeight: 600, color: '#0369a1' }}>🔗 Invite Link:</span>
+                  <button 
+                    onClick={handleCopyLink}
+                    style={{
+                      padding: '4px 12px',
+                      background: copied ? '#22c55e' : '#0284c7',
+                      color: 'white',
+                      border: 'none',
+                      borderRadius: 6,
+                      fontSize: '0.75rem',
+                      fontWeight: 600,
+                      cursor: 'pointer',
+                      transition: 'all 0.2s ease'
+                    }}
+                  >
+                    {copied ? '✅ Copied!' : '📋 Copy Link'}
+                  </button>
+                </div>
+                <div style={{ fontSize: '0.78rem', color: '#0c4a6e', wordBreak: 'break-all', background: 'white', padding: '8px 12px', borderRadius: 6, border: '1px solid #e0f2fe', fontFamily: 'monospace' }}>
                   {inviteLink}
                 </div>
               </div>
@@ -189,7 +229,7 @@ export default function Settings() {
               </button>
             </div>
             <p style={{ fontSize: '0.75rem', color: '#94a3b8', marginTop: 8 }}>
-              💡 Invite link terminal mein print hoga. Woh link copy karke user ko bhejo.
+              💡 Members receive an email with their registration link. You can also copy and send the link manually.
             </p>
           </div>
         )}

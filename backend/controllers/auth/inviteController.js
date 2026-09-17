@@ -27,8 +27,8 @@ const sendInvite = async (req, res) => {
         );
 
         if (existingUser.rows.length > 0) {
-            return res.status(400).json({ 
-                message: `Yeh email already aap ki company mein member hai` 
+            return res.status(400).json({
+                message: `Yeh email already aap ki company mein member hai`
             });
         }
 
@@ -40,8 +40,8 @@ const sendInvite = async (req, res) => {
         );
 
         if (existingInvite.rows.length > 0) {
-            return res.status(400).json({ 
-                message: 'Is email ka invite already pending hai' 
+            return res.status(400).json({
+                message: 'Is email ka invite already pending hai'
             });
         }
 
@@ -72,23 +72,59 @@ const sendInvite = async (req, res) => {
             [req.tenantId, req.userId, `Invited ${email} as ${role}`, 'Invite']
         );
 
-        // ========== GMAIL SMTP EMAIL ==========
-        try {
-            const transporter = nodemailer.createTransport({
-                host: 'smtp.gmail.com',
-                port: 465,
-                secure: true,
-                auth: {
-                    user: process.env.EMAIL_USER,
-                    pass: process.env.EMAIL_PASS,
-                },
-            });
+        // ========== GMAIL SMTP EMAIL (Port 587 + TLS) ==========
+        let emailSent = false;
+        let emailErrorMsg = null;
 
-            const info = await transporter.sendMail({
-                from: `"${tenantName}" <${process.env.EMAIL_USER}>`,
-                to: email,
-                subject: `📨 Invitation to join ${tenantName}`,
-                html: `
+        const emailUserRaw = process.env.EMAIL_USER ? process.env.EMAIL_USER.trim() : '';
+        const emailPassRaw = process.env.EMAIL_PASS ? process.env.EMAIL_PASS.trim() : '';
+
+        const maskedUser = emailUserRaw
+            ? emailUserRaw.replace(/^(.)(.*)(@.*)$/, (_, a, b, c) => a + '*'.repeat(Math.max(b.length, 3)) + c)
+            : '❌ MISSING';
+
+        const passStatus = emailPassRaw
+            ? `✅ SET (${emailPassRaw.length} chars)`
+            : '❌ MISSING';
+
+        console.log('========================================');
+        console.log('📧 STARTING INVITE EMAIL SEND');
+        console.log('   EMAIL_USER:', maskedUser);
+        console.log('   EMAIL_PASS:', passStatus);
+        console.log('   FRONTEND_URL:', frontendUrl);
+        console.log('   SMTP: smtp.gmail.com | Port: 587 | Secure: false | STARTTLS');
+        console.log('========================================');
+
+        if (emailUserRaw && emailPassRaw) {
+            try {
+                // ✅ Port 587 + STARTTLS — Render free tier compatible
+                const transporter = nodemailer.createTransport({
+                    host: 'smtp.gmail.com',
+                    port: 587,
+                    secure: false,        // STARTTLS (not implicit TLS)
+                    requireTLS: true,     // Force upgrade to TLS
+                    auth: {
+                        user: emailUserRaw,
+                        pass: emailPassRaw,
+                    },
+                    connectionTimeout: 20000,
+                    greetingTimeout: 20000,
+                    socketTimeout: 20000,
+                    tls: {
+                        rejectUnauthorized: false,  // Render SSL chain fix
+                        minVersion: 'TLSv1.2'
+                    }
+                });
+
+                console.log('🔍 Verifying SMTP connection on port 587...');
+                await transporter.verify();
+                console.log('✅ SMTP verified on port 587!');
+
+                const info = await transporter.sendMail({
+                    from: `"${tenantName}" <${emailUserRaw}>`,
+                    to: email,
+                    subject: `📨 Invitation to join ${tenantName}`,
+                    html: `
 <div style="font-family: 'Segoe UI', Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
   <div style="background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%); padding: 30px; border-radius: 12px 12px 0 0; text-align: center;">
     <h1 style="color: white; margin: 0; font-size: 24px;">🚀 You're Invited!</h1>
@@ -118,28 +154,53 @@ const sendInvite = async (req, res) => {
     </p>
   </div>
 </div>
-                `
-            });
+                    `
+                });
 
-            console.log('========================================');
-            console.log('📧 INVITE EMAIL SENT via Gmail SMTP');
-            console.log('   To:', email);
-            console.log('   Role:', role);
-            console.log('   Company:', tenantName);
-            console.log('   Message ID:', info.messageId);
-            console.log('   Invite Link:', inviteLink);
-            console.log('========================================');
+                emailSent = true;
+                console.log('========================================');
+                console.log('✅ INVITE EMAIL SENT SUCCESSFULLY via Gmail SMTP (port 587)');
+                console.log('   To:', email);
+                console.log('   Role:', role);
+                console.log('   Company:', tenantName);
+                console.log('   Message ID:', info.messageId);
+                console.log('   Accepted:', info.accepted);
+                console.log('   Rejected:', info.rejected);
+                console.log('   Response:', info.response);
+                console.log('   Invite Link:', inviteLink);
+                console.log('========================================');
 
-        } catch (emailError) {
-            console.error('❌ Gmail SMTP Error:', emailError.message);
-            console.log('🔗 Invite Link (debug):', inviteLink);
+            } catch (emailError) {
+                emailSent = false;
+                emailErrorMsg = emailError.message;
+                console.error('========================================');
+                console.error('❌ Gmail SMTP Error (port 587)');
+                console.error('   Message:', emailError.message);
+                console.error('   Code:', emailError.code);
+                console.error('   Command:', emailError.command);
+                console.error('   Response:', emailError.response);
+                console.error('========================================');
+                console.log('🔗 Invite Link (debug):', inviteLink);
+
+                // Extra hint if 587 also blocked
+                if (emailError.code === 'ETIMEDOUT' || emailError.code === 'ENETUNREACH') {
+                    console.error('⚠️ Port 587 bhi blocked lagta hai. Consider using Resend/SendGrid instead.');
+                }
+            }
+        } else {
+            emailErrorMsg = 'EMAIL_USER or EMAIL_PASS environment variables missing in server environment';
+            console.warn('⚠️ Cannot send email: EMAIL_USER or EMAIL_PASS is missing');
         }
 
         res.status(201).json({
             success: true,
-            message: `Invite sent to ${email} as ${role}`,
+            emailSent: emailSent,
+            message: emailSent
+                ? `Invite sent via email to ${email} as ${role}`
+                : `Invite created, but email delivery failed (${emailErrorMsg || 'SMTP error'}). You can copy and share the link manually below.`,
             inviteLink: inviteLink,
-            invite: result.rows[0]
+            invite: result.rows[0],
+            emailError: emailErrorMsg
         });
 
     } catch (error) {
@@ -166,8 +227,8 @@ const getInviteDetails = async (req, res) => {
         );
 
         if (result.rows.length === 0) {
-            return res.status(404).json({ 
-                message: 'Invite invalid ya expire ho gaya hai' 
+            return res.status(404).json({
+                message: 'Invite invalid ya expire ho gaya hai'
             });
         }
 
