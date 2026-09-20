@@ -1,7 +1,7 @@
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
-const nodemailer = require('nodemailer');
 const pool = require('../../config/db');
+const { sendPasswordResetEmail } = require('../../services/emailService');
 
 // ============================================
 // REGISTER (Company OR Invited Member)
@@ -296,55 +296,14 @@ const forgotPassword = async (req, res) => {
         const resetLink = `${frontendUrl}/reset-password/${resetToken}`;
 
         try {
-            const transporter = nodemailer.createTransport({
-                host: 'smtp.gmail.com',
-                port: 465,
-                secure: true,
-                auth: {
-                    user: process.env.EMAIL_USER,
-                    pass: process.env.EMAIL_PASS,
-                },
-            });
-
-            const info = await transporter.sendMail({
-                from: `"SaaS Platform" <${process.env.EMAIL_USER}>`,
+            await sendPasswordResetEmail({
                 to: email,
-                subject: '🔐 Password Reset Request',
-                html: `
-<div style="font-family: 'Segoe UI', Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
-  <div style="background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%); padding: 30px; border-radius: 12px 12px 0 0; text-align: center;">
-    <h1 style="color: white; margin: 0; font-size: 24px;">🔐 Password Reset</h1>
-  </div>
-  <div style="background: #f8fafc; padding: 30px; border-radius: 0 0 12px 12px; border: 1px solid #e2e8f0;">
-    <p style="font-size: 16px; color: #0f172a; line-height: 1.6;">
-      Hello <strong>${user.name || 'User'}</strong>,
-    </p>
-    <p style="font-size: 16px; color: #0f172a; line-height: 1.6;">
-      Aap ne password reset request ki hai. Neeche button click karke naya password set karein.
-    </p>
-    <div style="text-align: center; margin: 30px 0;">
-      <a href="${resetLink}" style="display: inline-block; padding: 14px 40px; background: #4f46e5; color: white; text-decoration: none; border-radius: 8px; font-weight: 600; font-size: 16px;">
-        🔑 Reset Password
-      </a>
-    </div>
-    <hr style="border: none; border-top: 1px solid #e2e8f0; margin: 24px 0;" />
-    <p style="font-size: 12px; color: #94a3b8; text-align: center;">
-      Yeh link 1 ghante mein expire ho jayega. Agar aap ne request nahi ki, toh ignore karein.
-    </p>
-  </div>
-</div>
-                `
+                userName: user.name,
+                resetLink
             });
-
-            console.log('========================================');
-            console.log('📧 PASSWORD RESET EMAIL SENT via Gmail SMTP');
-            console.log('   To:', email);
-            console.log('   Message ID:', info.messageId);
-            console.log('   Reset Link:', resetLink);
-            console.log('========================================');
-
+            console.log('✅ Password reset email sent successfully to:', email);
         } catch (emailError) {
-            console.error('❌ Gmail SMTP Error:', emailError.message);
+            console.error('❌ Password Reset Email Error:', emailError.message);
             console.log('🔗 Reset Link (debug):', resetLink);
         }
 

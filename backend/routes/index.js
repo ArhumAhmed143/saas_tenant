@@ -1,8 +1,8 @@
 const auth = require('./auth/auth');
 const invite = require('./auth/invite');
 const platform = require('./platform/platform');
-const tenants = require('./tenant/tenants');
 const tenant = require('./tenant/tenant');
+const tenants = require('./tenant/tenants');
 const users = require('./tenant/users');
 const departments = require('./tenant/departments');
 const projects = require('./work/projects');
@@ -20,8 +20,8 @@ module.exports = {
   auth,
   invite,
   platform,
-  tenants,
   tenant,
+  tenants,
   users,
   departments,
   projects,

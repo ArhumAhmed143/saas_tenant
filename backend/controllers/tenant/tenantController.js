@@ -1,14 +1,23 @@
 const pool = require('../../config/db');
 
 // ============================================
-// GET SINGLE TENANT
+// GET SINGLE TENANT (Safe ID parse)
 // ============================================
 const getTenant = async (req, res) => {
     try {
+        const id = req.params.id;
+        if (!id || id === 'null' || id === 'undefined' || isNaN(parseInt(id))) {
+            return res.status(400).json({ 
+                message: 'No tenant associated with this user',
+                tenantId: null 
+            });
+        }
+
         const result = await pool.query(
             'SELECT id, name, slug, created_at FROM tenants WHERE id = $1',
-            [req.params.id]
+            [parseInt(id)]
         );
+        
         if (result.rows.length === 0) {
             return res.status(404).json({ message: 'Tenant not found' });
         }
@@ -20,13 +29,19 @@ const getTenant = async (req, res) => {
 };
 
 // ============================================
-// UPDATE TENANT NAME
+// UPDATE TENANT NAME (Safe ID parse)
 // ============================================
 const updateTenant = async (req, res) => {
     try {
         const { name } = req.body;
+        const id = req.params.id;
+
         if (!name) {
             return res.status(400).json({ message: 'Name is required' });
+        }
+
+        if (!id || id === 'null' || isNaN(parseInt(id))) {
+            return res.status(400).json({ message: 'Invalid tenant ID' });
         }
 
         if (req.role !== 'Admin' && req.role !== 'PlatformOwner') {
@@ -35,7 +50,7 @@ const updateTenant = async (req, res) => {
 
         const result = await pool.query(
             'UPDATE tenants SET name = $1 WHERE id = $2 RETURNING id, name, slug',
-            [name, req.params.id]
+            [name, parseInt(id)]
         );
 
         if (result.rows.length === 0) {
@@ -51,5 +66,7 @@ const updateTenant = async (req, res) => {
 
 module.exports = {
     getTenant,
-    updateTenant
+    updateTenant,
+    getTenantById: getTenant,
+    updateTenantById: updateTenant
 };

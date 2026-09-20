@@ -1,9 +1,3 @@
-const express = require('express');
-const auth = require('../../middleware/auth');
-const { getTenantById, updateTenantById } = require('../../controllers/tenant/tenantsController');
-const router = express.Router();
+const tenantRouter = require('./tenant');
 
-router.get('/:id', auth, getTenantById);
-router.put('/:id', auth, updateTenantById);
-
-module.exports = router;
+module.exports = tenantRouter;
