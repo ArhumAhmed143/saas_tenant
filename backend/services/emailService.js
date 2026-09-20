@@ -24,6 +24,13 @@ const sendEmail = async ({ to, subject, html, text, fromName, fromEmail }) => {
     const emailFrom = fromEmail || process.env.EMAIL_FROM || emailUser || 'ahmedghulam622@gmail.com';
     const emailFromName = fromName || process.env.EMAIL_FROM_NAME || 'SaaS Platform';
 
+    console.log('========================================');
+    console.log('📧 SENDING EMAIL');
+    console.log('   To:', to);
+    console.log('   BREVO_API_KEY:', brevoApiKey ? `✅ Set (${brevoApiKey.substring(0, 12)}...)` : '❌ NOT SET');
+    console.log('   EMAIL_USER:', emailUser ? `✅ Set (${emailUser})` : '❌ NOT SET');
+    console.log('========================================');
+
     // 1. Prefer Brevo API if key is provided (Best free alternative: 300 free emails/day, HTTPS port 443)
     if (brevoApiKey) {
         try {
@@ -56,10 +63,7 @@ const sendEmail = async ({ to, subject, html, text, fromName, fromEmail }) => {
             return { success: true, provider: 'Brevo', messageId: data.messageId };
         } catch (brevoError) {
             console.error('❌ Brevo API Error:', brevoError.message);
-            if (!sendgridApiKey && (!emailUser || !emailPass)) {
-                throw new Error('Brevo delivery failed: ' + brevoError.message);
-            }
-            console.warn('⚠️ Falling back to next available provider...');
+            throw new Error(`Brevo API Error: ${brevoError.message}`);
         }
     }
 
@@ -133,13 +137,13 @@ const sendEmail = async ({ to, subject, html, text, fromName, fromEmail }) => {
                 throw new Error('Gmail authentication failed: Invalid App Password (535 BadCredentials). Please check EMAIL_PASS in .env.');
             }
             if (smtpError.code === 'ETIMEDOUT' || smtpError.code === 'ENETUNREACH') {
-                throw new Error('SMTP connection timed out. If running on Render free tier, outbound SMTP ports are blocked. Please use SENDGRID_API_KEY.');
+                throw new Error('Render Free Tier blocks outbound SMTP port 587. Please ensure BREVO_API_KEY is properly set in Render Environment variables.');
             }
             throw smtpError;
         }
     }
 
-    throw new Error('No email service configured. Please set either SENDGRID_API_KEY or EMAIL_USER & EMAIL_PASS in .env.');
+    throw new Error('No email service configured. Please set BREVO_API_KEY in Render Environment variables.');
 };
 
 /**
