@@ -272,18 +272,28 @@ const forgotPassword = async (req, res) => {
             return res.status(400).json({ message: 'Email is required' });
         }
 
-        console.log('📧 Forgot password request for:', email);
+        const normalizedEmail = email.trim().toLowerCase();
+        console.log('📧 Forgot password request for:', normalizedEmail);
 
-        const userRes = await pool.query('SELECT * FROM users WHERE email = $1', [email]);
+        const userRes = await pool.query(
+            'SELECT * FROM users WHERE LOWER(TRIM(email)) = LOWER(TRIM($1))',
+            [normalizedEmail]
+        );
+
         if (userRes.rows.length === 0) {
-            return res.json({ success: true, message: 'If this email exists, a reset link will be sent.' });
+            return res.status(404).json({ 
+                success: false, 
+                message: 'No account found with this email address.' 
+            });
         }
 
         const user = userRes.rows[0];
 
+        const resetSecret = process.env.JWT_RESET_SECRET || process.env.JWT_SECRET || 'my_reset_secret_key_12345';
+
         const resetToken = jwt.sign(
             { userId: user.id },
-            process.env.JWT_RESET_SECRET,
+            resetSecret,
             { expiresIn: '1h' }
         );
 
@@ -292,29 +302,25 @@ const forgotPassword = async (req, res) => {
             [resetToken, user.id]
         );
 
-        const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
+        const frontendUrl = (process.env.FRONTEND_URL || 'https://saas-tenant-frontend.onrender.com').replace(/\/$/, '');
         const resetLink = `${frontendUrl}/reset-password/${resetToken}`;
 
-        try {
-            await sendPasswordResetEmail({
-                to: email,
-                userName: user.name,
-                resetLink
-            });
-            console.log('✅ Password reset email sent successfully to:', email);
-        } catch (emailError) {
-            console.error('❌ Password Reset Email Error:', emailError.message);
-            console.log('🔗 Reset Link (debug):', resetLink);
-        }
+        await sendPasswordResetEmail({
+            to: user.email,
+            userName: user.name,
+            resetLink
+        });
+
+        console.log('✅ Password reset email sent successfully to:', user.email);
 
         res.json({ 
             success: true, 
-            message: '✅ Reset link sent to your email inbox!'
+            message: 'Password reset link sent! Please check your email inbox (and spam folder).'
         });
 
     } catch (error) {
         console.error('❌ Forgot Password Error:', error);
-        res.status(500).json({ message: error.message || 'Internal server error' });
+        res.status(500).json({ message: error.message || 'Failed to send password reset email. Please try again.' });
     }
 };
 
@@ -328,9 +334,11 @@ const resetPassword = async (req, res) => {
             return res.status(400).json({ message: 'Token and new password are required' });
         }
 
+        const resetSecret = process.env.JWT_RESET_SECRET || process.env.JWT_SECRET || 'my_reset_secret_key_12345';
+
         let decoded;
         try {
-            decoded = jwt.verify(token, process.env.JWT_RESET_SECRET);
+            decoded = jwt.verify(token, resetSecret);
         } catch (error) {
             return res.status(400).json({ message: 'Invalid or expired reset token' });
         }
@@ -353,11 +361,11 @@ const resetPassword = async (req, res) => {
             [hashedPassword, userId]
         );
 
-        res.json({ success: true, message: '✅ Password reset successfully. You can now login with your new password.' });
+        res.json({ success: true, message: 'Password reset successfully. You can now login with your new password.' });
 
     } catch (error) {
         console.error('❌ Reset Password Error:', error);
-        res.status(500).json({ message: 'Internal server error' });
+        res.status(500).json({ message: error.message || 'Internal server error' });
     }
 };
 

@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { useApp } from '../../context/AppContext';
 import api from '../../api';
+import Logo from '../../components/Logo';
 import '../../styles/global.css';
 
 export default function Register() {
@@ -121,7 +122,9 @@ export default function Register() {
               {success && <div style={{ background: '#dcfce7', color: '#16a34a', padding: 12, borderRadius: 8, marginBottom: 16 }}>{success}</div>}
 
               <div style={{ background: '#f0f9ff', border: '1px solid #bae6fd', padding: 12, borderRadius: 8, marginBottom: 20, fontSize: '0.85rem', color: '#0369a1' }}>
-                <div>🏢 <strong>{inviteData.tenantName}</strong></div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                  <Logo size={16} /> <strong>{inviteData.tenantName}</strong>
+                </div>
                 <div>👤 Role: <strong>{inviteData.role}</strong></div>
                 <div>📧 Email: <strong>{inviteData.email}</strong></div>
               </div>

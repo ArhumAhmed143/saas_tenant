@@ -5,7 +5,18 @@ import { API_URL } from '../api';
 const AppContext = createContext();
 
 export const AppProvider = ({ children }) => {
-  const [currentUser, setCurrentUser] = useState(null);
+  const [currentUser, setCurrentUser] = useState(() => {
+    try {
+      const token = localStorage.getItem('accessToken');
+      const userStr = localStorage.getItem('user');
+      if (token && userStr) {
+        return JSON.parse(userStr);
+      }
+    } catch (e) {
+      console.error('Error reading auth from localStorage:', e);
+    }
+    return null;
+  });
   const [currentTenant, setCurrentTenant] = useState(null);
   const [projects, setProjects] = useState([]);
   const [tasks, setTasks] = useState([]);
@@ -19,6 +30,9 @@ export const AppProvider = ({ children }) => {
   const [sprints, setSprints] = useState([]);
   const [burndownData, setBurndownData] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const toggleMobileMenu = useCallback(() => setIsMobileMenuOpen(prev => !prev), []);
+  const closeMobileMenu = useCallback(() => setIsMobileMenuOpen(false), []);
 
   // ---------- AXIOS INTERCEPTOR ----------
   const api = useMemo(() => {
@@ -316,6 +330,18 @@ export const AppProvider = ({ children }) => {
     }
   };
 
+  const deleteOrganization = async (tenantId) => {
+    try {
+      const id = tenantId || currentTenant?.id;
+      if (!id) throw new Error('No organization ID specified');
+      const res = await api.delete(`/api/tenants/${id}`);
+      logout();
+      return res.data;
+    } catch (error) {
+      throw new Error(error.response?.data?.message || 'Failed to delete organization');
+    }
+  };
+
   // ========== CRUD OPERATIONS ==========
   const addSprint = async (sprint) => {
     try {
@@ -485,8 +511,10 @@ export const AppProvider = ({ children }) => {
       sprints, addSprint, fetchSprints,
       burndownData, fetchBurndown,
       updateTenant,
+      deleteOrganization,
       sendInvite,
       isLoading,
+      isMobileMenuOpen, toggleMobileMenu, closeMobileMenu,
       login, register, registerPlatformOwner, logout, addActivity,
       getTasksByUser, getOverdueTasks, getWorkloadByUser, getTeamStats,
     }}>

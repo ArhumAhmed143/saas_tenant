@@ -2,6 +2,7 @@ import { useEffect, useState, useMemo } from 'react';
 import { Sidebar } from '../../components/Sidebar';
 import PageHeader from '../../components/PageHeader';
 import StatsCard from '../../components/StatsCard';
+import Logo from '../../components/Logo';
 import api from '../../api';
 
 export default function PlatformTenants() {
@@ -120,7 +121,7 @@ export default function PlatformTenants() {
     <div style={styles.appContainer}>
       <Sidebar />
 
-      <div style={styles.mainWrapper}>
+      <div className="main-wrapper" style={styles.mainWrapper}>
         <PageHeader
           title="🏢 All Companies"
           subtitle={`Manage all registered tenants on the platform (${totalCount} total companies)`}
@@ -129,13 +130,13 @@ export default function PlatformTenants() {
           loading={loading}
         />
 
-        <div style={styles.contentContainer}>
+        <div className="content-container" style={styles.contentContainer}>
           {/* STATS CARDS */}
-          <div style={styles.statsGrid}>
-            <StatsCard icon="🏢" value={totalCount} label="Total Companies" color="#4f46e5" />
-            <StatsCard icon="✅" value={activeCount} label="Active Companies" color="#22c55e" />
-            <StatsCard icon="⏸️" value={inactiveCount} label="Inactive Companies" color="#f59e0b" />
-            <StatsCard icon="👑" value={enterpriseCount} label="Enterprise Tier" color="#7c3aed" />
+          <div className="stats-grid" style={styles.statsGrid}>
+            <StatsCard value={totalCount} label="Total Companies" color="#4f46e5" />
+            <StatsCard value={activeCount} label="Active Companies" color="#22c55e" />
+            <StatsCard value={inactiveCount} label="Inactive Companies" color="#f59e0b" />
+            <StatsCard value={enterpriseCount} label="Enterprise Tier" color="#7c3aed" />
           </div>
 
           {/* SEARCH & FILTERS BAR */}
@@ -197,7 +198,7 @@ export default function PlatformTenants() {
                   {/* CARD HEADER */}
                   <div style={styles.companyCardHeader}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                      <div style={styles.companyLogoBox}>🏢</div>
+                      <Logo size={40} />
                       <div>
                         <h3 style={styles.companyName}>{t.name}</h3>
                         <span style={styles.companySlug}>slug: {t.slug}</span>

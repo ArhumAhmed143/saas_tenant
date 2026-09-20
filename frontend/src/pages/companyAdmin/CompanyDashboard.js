@@ -87,7 +87,7 @@ export default function CompanyDashboard() {
     <div style={styles.appContainer}>
       <Sidebar />
       
-      <div style={styles.mainWrapper}>
+      <div className="main-wrapper" style={styles.mainWrapper}>
         <PageHeader
           title="🏢 Company Admin Dashboard"
           subtitle={`Welcome back, ${currentUser?.name || 'Admin'} — Full workspace access & company analytics`}
@@ -96,39 +96,34 @@ export default function CompanyDashboard() {
           loading={loading}
         />
 
-        <div style={styles.contentContainer}>
+        <div className="content-container" style={styles.contentContainer}>
           {/* STATS CARDS GRID (5 CARDS) */}
-          <div style={styles.statsGrid}>
+          <div className="stats-grid" style={styles.statsGrid}>
             <StatsCard
-              icon="📂"
               value={projects.length}
               label="Total Projects"
               color="#4f46e5"
               onClick={() => navigate('/projects')}
             />
             <StatsCard
-              icon="✅"
               value={totalTasks}
               label="Total Tasks"
               color="#0ea5e9"
               onClick={() => navigate('/tasks')}
             />
             <StatsCard
-              icon="🔄"
               value={inProgressTasks}
               label="In Progress"
               color="#f59e0b"
               onClick={() => navigate('/tasks')}
             />
             <StatsCard
-              icon="👥"
               value={users.length}
               label="Team Members"
               color="#22c55e"
               onClick={() => navigate('/organization')}
             />
             <StatsCard
-              icon="⏰"
               value={overdueCount}
               label={overdueCount === 0 ? 'No Overdue Tasks' : 'Overdue Tasks!'}
               color="#dc2626"
@@ -137,7 +132,7 @@ export default function CompanyDashboard() {
           </div>
 
           {/* ROW 1: Overall Progress + Sprint Burndown */}
-          <div style={styles.twoColumnGrid}>
+          <div className="two-column-grid" style={styles.twoColumnGrid}>
             <div style={styles.card}>
               <h3 style={styles.cardTitle}>📈 Overall Task Completion Progress</h3>
               <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.88rem', color: '#64748b', margin: '16px 0 6px 0' }}>
@@ -186,7 +181,7 @@ export default function CompanyDashboard() {
           </div>
 
           {/* ROW 2: Projects + Quick Actions */}
-          <div style={styles.twoColumnGrid}>
+          <div className="two-column-grid" style={styles.twoColumnGrid}>
             <div style={styles.card}>
               <div style={styles.cardHeader}>
                 <h3 style={styles.cardTitle}>📂 Projects by Status</h3>
@@ -233,7 +228,7 @@ export default function CompanyDashboard() {
           </div>
 
           {/* ROW 3: Team Workload + Recent Activity */}
-          <div style={styles.twoColumnGrid}>
+          <div className="two-column-grid" style={styles.twoColumnGrid}>
             <div style={styles.card}>
               <div style={styles.cardHeader}>
                 <h3 style={styles.cardTitle}>👥 Team Workload</h3>

@@ -4,6 +4,7 @@ import { useApp } from '../../context/AppContext';
 import { Sidebar } from '../../components/Sidebar';
 import PageHeader from '../../components/PageHeader';
 import StatsCard from '../../components/StatsCard';
+import Logo from '../../components/Logo';
 import api from '../../api';
 
 export default function PlatformOwnerDashboard() {
@@ -87,7 +88,7 @@ export default function PlatformOwnerDashboard() {
     <div style={styles.appContainer}>
       <Sidebar />
 
-      <div style={styles.mainWrapper}>
+      <div className="main-wrapper" style={styles.mainWrapper}>
         <PageHeader
           title="👑 Platform Owner Dashboard"
           subtitle={`Welcome back, ${currentUser?.name || 'Super Admin'} — Full platform management & analytics`}
@@ -97,10 +98,10 @@ export default function PlatformOwnerDashboard() {
         />
 
         {/* CONTENT CONTAINER */}
-        <div style={styles.contentContainer}>
+        <div className="content-container" style={styles.contentContainer}>
           
           {/* QUICK ACTIONS BAR */}
-          <div style={styles.quickActionsBar}>
+          <div className="quick-actions-bar" style={styles.quickActionsBar}>
             <span style={{ fontSize: '0.85rem', fontWeight: 700, color: '#475569' }}>⚡ Quick Actions:</span>
             <button onClick={() => navigate('/platform/tenants')} style={styles.quickBtnPrimary}>
               🏢 Manage All Companies ({tenants.length})
@@ -117,36 +118,31 @@ export default function PlatformOwnerDashboard() {
           </div>
 
           {/* STATS CARDS GRID (FULL WIDTH) */}
-          <div style={styles.statsGrid}>
+          <div className="stats-grid" style={styles.statsGrid}>
             <StatsCard
-              icon="🏢"
               value={tenants.length}
               label="Total Companies"
               color="#4f46e5"
               onClick={() => navigate('/platform/tenants')}
             />
             <StatsCard
-              icon="👥"
               value={allUsers.length}
               label="Total Users"
               color="#0ea5e9"
               onClick={() => navigate('/platform/users')}
             />
             <StatsCard
-              icon="📋"
               value={activities.length}
               label="Total Activities"
               color="#7c3aed"
               onClick={() => navigate('/platform/activity')}
             />
             <StatsCard
-              icon="✅"
               value="Active"
               label="System Status"
               color="#22c55e"
             />
             <StatsCard
-              icon="💚"
               value="Healthy"
               label="Database Status"
               color="#16a34a"
@@ -154,7 +150,7 @@ export default function PlatformOwnerDashboard() {
           </div>
 
           {/* TWO COLUMN BALANCED LAYOUT */}
-          <div style={styles.twoColumnGrid}>
+          <div className="two-column-grid" style={styles.twoColumnGrid}>
             
             {/* LEFT COLUMN (2fr) */}
             <div style={styles.columnGroup}>
@@ -204,7 +200,9 @@ export default function PlatformOwnerDashboard() {
                       {tenants.slice(0, 5).map(t => (
                         <tr key={t.id} style={styles.tr}>
                           <td style={styles.td}>
-                            <div style={{ fontWeight: 600, color: '#0f172a' }}>🏢 {t.name}</div>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontWeight: 600, color: '#0f172a' }}>
+                              <Logo size={18} /> {t.name}
+                            </div>
                             <div style={{ fontSize: '0.75rem', color: '#94a3b8' }}>slug: {t.slug}</div>
                           </td>
                           <td style={styles.td}>
@@ -282,8 +280,14 @@ export default function PlatformOwnerDashboard() {
                         </div>
                         <div style={{ flex: 1, minWidth: 0 }}>
                           <div style={{ color: '#0f172a', fontSize: '0.82rem', fontWeight: 500, lineHeight: 1.3 }}>{a.action}</div>
-                          <div style={{ fontSize: '0.7rem', color: '#94a3b8', marginTop: 2 }}>
-                            {a.tenant_name ? `🏢 ${a.tenant_name}` : '🌍 Platform'} • {getRelativeTime(a.created_at)}
+                          <div style={{ fontSize: '0.7rem', color: '#94a3b8', marginTop: 2, display: 'flex', alignItems: 'center', gap: 4 }}>
+                            {a.tenant_name ? (
+                              <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}>
+                                <Logo size={12} /> {a.tenant_name}
+                              </span>
+                            ) : (
+                              '🌍 Platform'
+                            )} • {getRelativeTime(a.created_at)}
                           </div>
                         </div>
                       </li>

@@ -2,6 +2,7 @@ import { useEffect, useState, useMemo } from 'react';
 import { Sidebar } from '../../components/Sidebar';
 import PageHeader from '../../components/PageHeader';
 import StatsCard from '../../components/StatsCard';
+import Logo from '../../components/Logo';
 import api from '../../api';
 
 export default function PlatformActivity() {
@@ -103,7 +104,7 @@ export default function PlatformActivity() {
     <div style={styles.appContainer}>
       <Sidebar />
 
-      <div style={styles.mainWrapper}>
+      <div className="main-wrapper" style={styles.mainWrapper}>
         <PageHeader
           title="📋 Platform Activity Logs"
           subtitle={`Audit log of all platform operations and tenant activities (${totalCount} total logged events)`}
@@ -112,13 +113,13 @@ export default function PlatformActivity() {
           loading={loading}
         />
 
-        <div style={styles.contentContainer}>
+        <div className="content-container" style={styles.contentContainer}>
           {/* STATS CARDS */}
-          <div style={styles.statsGrid}>
-            <StatsCard icon="📋" value={totalCount} label="Total Logged Events" color="#4f46e5" />
-            <StatsCard icon="🏢" value={tenantEventCount} label="Tenant Activities" color="#0ea5e9" />
-            <StatsCard icon="🌍" value={platformEventCount} label="Platform Scope Events" color="#7c3aed" />
-            <StatsCard icon="⚡" value={filteredActivities.length} label="Filtered Events" color="#22c55e" />
+          <div className="stats-grid" style={styles.statsGrid}>
+            <StatsCard value={totalCount} label="Total Logged Events" color="#4f46e5" />
+            <StatsCard value={tenantEventCount} label="Tenant Activities" color="#0ea5e9" />
+            <StatsCard value={platformEventCount} label="Platform Scope Events" color="#7c3aed" />
+            <StatsCard value={filteredActivities.length} label="Filtered Events" color="#22c55e" />
           </div>
 
           {/* SCOPE & SEARCH FILTERS BAR */}
@@ -252,9 +253,19 @@ export default function PlatformActivity() {
                           fontWeight: 700,
                           whiteSpace: 'nowrap',
                           flexShrink: 0,
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: 6,
                         }}
                       >
-                        {a.tenant_name ? `🏢 ${a.tenant_name}` : '🌍 Platform'}
+                        {a.tenant_name ? (
+                          <>
+                            <Logo size={14} />
+                            {a.tenant_name}
+                          </>
+                        ) : (
+                          '🌍 Platform'
+                        )}
                       </span>
                     </div>
                   );

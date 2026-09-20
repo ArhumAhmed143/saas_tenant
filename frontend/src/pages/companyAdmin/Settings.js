@@ -1,16 +1,24 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useApp } from '../../context/AppContext';
 import { Sidebar } from '../../components/Sidebar';
 
 export default function Settings() {
+  const navigate = useNavigate();
   const { 
-    currentTenant, users, addActivity, currentUser,
-    updateUserRole, removeUser, updateTenant, sendInvite
+    currentTenant, users, currentUser,
+    updateUserRole, removeUser, updateTenant, sendInvite, deleteOrganization
   } = useApp();
   
   const [companyName, setCompanyName] = useState('');
   const [isEditing, setIsEditing] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+
+  // Delete Organization Modal State
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [deleteError, setDeleteError] = useState('');
+  const [deleteSuccess, setDeleteSuccess] = useState('');
 
   // Invite State
   const [inviteEmail, setInviteEmail] = useState('');
@@ -87,6 +95,29 @@ export default function Settings() {
       alert(`✅ Role changed to ${newRole}`);
     } catch (error) {
       alert(`❌ ${error.message}`);
+    }
+  };
+
+  const handleDeleteOrganization = async () => {
+    setIsDeleting(true);
+    setDeleteError('');
+    setDeleteSuccess('');
+    try {
+      const orgName = currentTenant?.name || 'Organization';
+      const successMessage = `✅ Organization "${orgName}" and all associated data have been permanently deleted.`;
+      sessionStorage.setItem('flashMessage', successMessage);
+      await deleteOrganization(currentTenant?.id);
+      setDeleteSuccess(successMessage);
+      setTimeout(() => {
+        setShowDeleteModal(false);
+        navigate('/login', { 
+          state: { message: successMessage },
+          replace: true 
+        });
+      }, 500);
+    } catch (error) {
+      setDeleteError(error.message || 'Failed to delete organization');
+      setIsDeleting(false);
     }
   };
 
@@ -239,9 +270,125 @@ export default function Settings() {
           <div style={{ background: '#fef2f2', padding: 24, borderRadius: 16, border: '1px solid #fecaca' }}>
             <h4 style={{ color: '#dc2626', marginBottom: 8 }}>⚠️ Danger Zone</h4>
             <p style={{ color: '#64748b', fontSize: '0.9rem', marginBottom: 16 }}>Permanently delete this organization and all associated data.</p>
-            <button onClick={() => { if (window.confirm('🚨 Are you ABSOLUTELY sure?')) alert('🗑️ Not implemented yet (Demo)'); }} style={{ padding: '10px 24px', background: '#dc2626', color: 'white', border: 'none', borderRadius: 8, fontWeight: 600, cursor: 'pointer' }}>
+            <button 
+              onClick={() => { setDeleteError(''); setShowDeleteModal(true); }} 
+              style={{ padding: '10px 24px', background: '#dc2626', color: 'white', border: 'none', borderRadius: 8, fontWeight: 600, cursor: 'pointer' }}
+            >
               Delete Organization
             </button>
+          </div>
+        )}
+
+        {/* Delete Confirmation Modal */}
+        {showDeleteModal && (
+          <div style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            background: 'rgba(15, 23, 42, 0.65)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 1000,
+            padding: 20
+          }}>
+            <div style={{
+              background: 'white',
+              borderRadius: 16,
+              maxWidth: 480,
+              width: '100%',
+              padding: 28,
+              boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)',
+              border: '1px solid #fee2e2'
+            }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16 }}>
+                <div style={{
+                  width: 44,
+                  height: 44,
+                  borderRadius: 10,
+                  background: '#fee2e2',
+                  color: '#dc2626',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  fontSize: '1.4rem'
+                }}>
+                  ⚠️
+                </div>
+                <div>
+                  <h3 style={{ margin: 0, color: '#0f172a', fontSize: '1.25rem' }}>Delete Organization?</h3>
+                  <p style={{ margin: '2px 0 0', color: '#64748b', fontSize: '0.85rem' }}>This action cannot be undone.</p>
+                </div>
+              </div>
+
+              {deleteSuccess && (
+                <div style={{
+                  padding: '10px 14px',
+                  background: '#dcfce7',
+                  color: '#166534',
+                  border: '1px solid #bbf7d0',
+                  borderRadius: 8,
+                  marginBottom: 16,
+                  fontSize: '0.85rem'
+                }}>
+                  {deleteSuccess}
+                </div>
+              )}
+
+              {deleteError && (
+                <div style={{
+                  padding: '10px 14px',
+                  background: '#fee2e2',
+                  color: '#dc2626',
+                  borderRadius: 8,
+                  marginBottom: 16,
+                  fontSize: '0.85rem'
+                }}>
+                  ❌ {deleteError}
+                </div>
+              )}
+
+              <p style={{ color: '#334155', fontSize: '0.9rem', lineHeight: 1.5, marginBottom: 24 }}>
+                Are you sure you want to permanently delete <strong>{currentTenant?.name || 'this organization'}</strong>? All projects, tasks, sprints, members, and data will be permanently wiped out. You will be logged out immediately.
+              </p>
+
+              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 12 }}>
+                <button
+                  type="button"
+                  onClick={() => setShowDeleteModal(false)}
+                  disabled={isDeleting}
+                  style={{
+                    padding: '10px 20px',
+                    borderRadius: 8,
+                    border: '1px solid #cbd5e1',
+                    background: 'white',
+                    color: '#475569',
+                    fontWeight: 600,
+                    cursor: isDeleting ? 'not-allowed' : 'pointer'
+                  }}
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  onClick={handleDeleteOrganization}
+                  disabled={isDeleting}
+                  style={{
+                    padding: '10px 20px',
+                    borderRadius: 8,
+                    border: 'none',
+                    background: isDeleting ? '#94a3b8' : '#dc2626',
+                    color: 'white',
+                    fontWeight: 600,
+                    cursor: isDeleting ? 'not-allowed' : 'pointer'
+                  }}
+                >
+                  {isDeleting ? 'Deleting...' : 'Yes, Delete Organization'}
+                </button>
+              </div>
+            </div>
           </div>
         )}
 

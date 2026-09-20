@@ -1,17 +1,32 @@
-import { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useApp } from '../../context/AppContext';
 import '../../styles/global.css';
 
 export default function Login() {
+  const location = useLocation();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);
   const [error, setError] = useState('');
+  const [success] = useState(() => {
+    const flash = sessionStorage.getItem('flashMessage');
+    if (flash) {
+      sessionStorage.removeItem('flashMessage');
+      return flash;
+    }
+    return location.state?.message || '';
+  });
   const [capsLock, setCapsLock] = useState(false);
-  const { login, isLoading } = useApp();
+  const { login, isLoading, currentUser } = useApp();
   const navigate = useNavigate();
+
+  useEffect(() => {
+    if (currentUser && localStorage.getItem('accessToken')) {
+      navigate('/dashboard', { replace: true });
+    }
+  }, [currentUser, navigate]);
 
 
   const handleSubmit = async (e) => {
@@ -30,6 +45,21 @@ export default function Login() {
       <div className="auth-card">
         <h2>Welcome Back</h2>
         <p className="subtitle">Sign in to your Multi-Tenant SaaS account</p>
+
+        {success && (
+          <div style={{
+            background: '#dcfce7',
+            color: '#166534',
+            border: '1px solid #bbf7d0',
+            padding: 12,
+            borderRadius: 8,
+            marginBottom: 16,
+            fontSize: '0.88rem',
+            lineHeight: 1.4
+          }}>
+            {success}
+          </div>
+        )}
 
         {error && <div style={{ background: '#fee2e2', color: '#dc2626', padding: 12, borderRadius: 8, marginBottom: 16 }}>{error}</div>}
 

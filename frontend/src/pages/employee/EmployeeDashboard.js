@@ -67,7 +67,7 @@ export default function EmployeeDashboard() {
     <div style={styles.appContainer}>
       <Sidebar />
 
-      <div style={styles.mainWrapper}>
+      <div className="main-wrapper" style={styles.mainWrapper}>
         <PageHeader
           title="👤 Employee Dashboard"
           subtitle={`Welcome back, ${currentUser?.name || 'User'} — Your personal workspace & assigned tasks`}
@@ -76,32 +76,28 @@ export default function EmployeeDashboard() {
           loading={loading}
         />
 
-        <div style={styles.contentContainer}>
+        <div className="content-container" style={styles.contentContainer}>
           {/* STATS CARDS GRID (4 CARDS) */}
-          <div style={styles.statsGrid}>
+          <div className="stats-grid" style={styles.statsGrid}>
             <StatsCard
-              icon="📋"
               value={total}
               label="Total Assigned Tasks"
               color="#4f46e5"
               onClick={() => navigate('/my-tasks')}
             />
             <StatsCard
-              icon="✅"
               value={done}
               label="Completed Tasks"
               color="#22c55e"
               onClick={() => navigate('/my-tasks')}
             />
             <StatsCard
-              icon="🔄"
               value={inProgress}
               label="In Progress"
               color="#f59e0b"
               onClick={() => navigate('/my-tasks')}
             />
             <StatsCard
-              icon="⏰"
               value={myOverdue.length}
               label={myOverdue.length === 0 ? 'No Overdue Tasks' : 'Overdue Tasks!'}
               color="#dc2626"
@@ -110,7 +106,7 @@ export default function EmployeeDashboard() {
           </div>
 
           {/* ROW 1: My Progress + Priority Breakdown */}
-          <div style={styles.twoColumnGrid}>
+          <div className="two-column-grid" style={styles.twoColumnGrid}>
             <div style={styles.card}>
               <h3 style={styles.cardTitle}>📈 My Personal Completion Progress</h3>
               <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.88rem', color: '#64748b', margin: '16px 0 6px 0' }}>
@@ -160,7 +156,7 @@ export default function EmployeeDashboard() {
           </div>
 
           {/* ROW 2: My Tasks + Quick Actions */}
-          <div style={styles.twoColumnGrid}>
+          <div className="two-column-grid" style={styles.twoColumnGrid}>
             <div style={styles.card}>
               <div style={styles.cardHeader}>
                 <h3 style={styles.cardTitle}>📋 My Assigned Tasks ({total})</h3>

@@ -56,7 +56,7 @@ export default function PlatformAnalytics() {
     <div style={styles.appContainer}>
       <Sidebar />
 
-      <div style={styles.mainWrapper}>
+      <div className="main-wrapper" style={styles.mainWrapper}>
         <PageHeader
           title="📈 Platform Analytics"
           subtitle="Growth metrics, user expansion trends, and plan distribution across all tenants"
@@ -65,18 +65,17 @@ export default function PlatformAnalytics() {
           loading={loading}
         />
 
-        <div style={styles.contentContainer}>
+        <div className="content-container" style={styles.contentContainer}>
           {/* STATS CARDS GRID (4 CARDS) */}
-          <div style={styles.statsGrid}>
-            <StatsCard icon="🏢" value={tenants.length} label="Total Companies" color="#4f46e5" />
-            <StatsCard icon="👥" value={allUsers.length} label="Total Platform Users" color="#0ea5e9" />
+          <div className="stats-grid" style={styles.statsGrid}>
+            <StatsCard value={tenants.length} label="Total Companies" color="#4f46e5" />
+            <StatsCard value={allUsers.length} label="Total Platform Users" color="#0ea5e9" />
             <StatsCard
-              icon={growthRate >= 0 ? "📈" : "📉"}
               value={growthRate > 0 ? `+${growthRate}` : `${growthRate}`}
               label="Growth (This Month)"
               color={growthRate >= 0 ? "#22c55e" : "#dc2626"}
             />
-            <StatsCard icon="📊" value={avgUsersPerCompany} label="Avg Users / Company" color="#7c3aed" />
+            <StatsCard value={avgUsersPerCompany} label="Avg Users / Company" color="#7c3aed" />
           </div>
 
           {/* LARGE GROWTH CHART (FULL WIDTH) */}
@@ -102,7 +101,7 @@ export default function PlatformAnalytics() {
           </div>
 
           {/* TWO COLUMN GRID FOR PLAN DISTRIBUTION & KEY METRICS */}
-          <div style={styles.twoColumnGrid}>
+          <div className="two-column-grid" style={styles.twoColumnGrid}>
             <div style={styles.card}>
               <h3 style={styles.cardTitle}>💰 Subscription Plan Distribution</h3>
               <div style={{ marginTop: 20 }}>

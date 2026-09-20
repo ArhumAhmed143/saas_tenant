@@ -1,4 +1,5 @@
 import React from 'react';
+import { useApp } from '../context/AppContext';
 import NotificationBell from './NotificationBell';
 
 export const PageHeader = ({
@@ -10,18 +11,31 @@ export const PageHeader = ({
   showBell = true,
   children
 }) => {
+  const { toggleMobileMenu } = useApp() || {};
+
   return (
-    <header style={styles.header}>
-      <div style={{ flex: 1, minWidth: 0 }}>
-        <h1 style={{ ...styles.title, color }}>{title}</h1>
-        {subtitle && <p style={styles.subtitle}>{subtitle}</p>}
+    <header className="page-header" style={styles.header}>
+      <div className="header-left" style={styles.headerLeft}>
+        <button
+          className="header-hamburger-btn"
+          onClick={toggleMobileMenu}
+          aria-label="Toggle menu"
+          type="button"
+        >
+          ☰
+        </button>
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <h1 className="header-title" style={{ ...styles.title, color }}>{title}</h1>
+          {subtitle && <p className="header-subtitle" style={styles.subtitle}>{subtitle}</p>}
+        </div>
       </div>
 
-      <div style={styles.rightActions}>
+      <div className="header-actions" style={styles.rightActions}>
         {children}
 
         {onRefresh && (
           <button
+            className="header-refresh-btn"
             onClick={onRefresh}
             disabled={loading}
             style={{
@@ -36,7 +50,8 @@ export const PageHeader = ({
               if (!loading) e.currentTarget.style.background = '#f1f5f9';
             }}
           >
-            {loading ? '⏳ Refreshing...' : '🔄 Refresh'}
+            <span className="refresh-icon">{loading ? '⏳' : '🔄'}</span>
+            <span className="refresh-text">{loading ? ' Refreshing...' : ' Refresh'}</span>
           </button>
         )}
 
@@ -60,6 +75,13 @@ const styles = {
     boxShadow: '0 1px 3px rgba(0,0,0,0.03)',
     gap: 16,
     flexWrap: 'wrap',
+  },
+  headerLeft: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: 12,
+    flex: 1,
+    minWidth: 0,
   },
   title: {
     fontSize: '1.6rem',

@@ -53,8 +53,9 @@ function AppRoutes() {
         <Route path="/platform/analytics" element={<ProtectedRoute><PlatformAnalytics /></ProtectedRoute>} />
         <Route path="/platform/activity" element={<ProtectedRoute><PlatformActivity /></ProtectedRoute>} />
 
-        {/* Fallback */}
-        <Route path="*" element={<Navigate to={currentUser ? "/dashboard" : "/login"} />} />
+        {/* Root & Fallback Routes */}
+        <Route path="/" element={<Navigate to={currentUser && localStorage.getItem('accessToken') ? "/dashboard" : "/login"} replace />} />
+        <Route path="*" element={<Navigate to={currentUser && localStorage.getItem('accessToken') ? "/dashboard" : "/login"} replace />} />
       </Routes>
     </BrowserRouter>
   );

@@ -2,6 +2,7 @@ import { useEffect, useState, useMemo } from 'react';
 import { Sidebar } from '../../components/Sidebar';
 import PageHeader from '../../components/PageHeader';
 import StatsCard from '../../components/StatsCard';
+import Logo from '../../components/Logo';
 import api from '../../api';
 
 export default function PlatformUsers() {
@@ -113,7 +114,7 @@ export default function PlatformUsers() {
     <div style={styles.appContainer}>
       <Sidebar />
 
-      <div style={styles.mainWrapper}>
+      <div className="main-wrapper" style={styles.mainWrapper}>
         <PageHeader
           title="👥 All Platform Users"
           subtitle={`Manage user accounts across ${tenants.length} registered companies (${totalCount} total users)`}
@@ -122,13 +123,13 @@ export default function PlatformUsers() {
           loading={loading}
         />
 
-        <div style={styles.contentContainer}>
+        <div className="content-container" style={styles.contentContainer}>
           {/* STATS CARDS GRID */}
-          <div style={styles.statsGrid}>
-            <StatsCard icon="👥" value={totalCount} label="Total Users" color="#4f46e5" />
-            <StatsCard icon="🏢" value={adminCount} label="Company Admins" color="#4f46e5" />
-            <StatsCard icon="👨‍💼" value={managerCount} label="Team Managers" color="#0ea5e9" />
-            <StatsCard icon="👤" value={employeeCount} label="Employees" color="#64748b" />
+          <div className="stats-grid" style={styles.statsGrid}>
+            <StatsCard value={totalCount} label="Total Users" color="#4f46e5" />
+            <StatsCard value={adminCount} label="Company Admins" color="#4f46e5" />
+            <StatsCard value={managerCount} label="Team Managers" color="#0ea5e9" />
+            <StatsCard value={employeeCount} label="Employees" color="#64748b" />
           </div>
 
           {/* SEARCH BAR & FILTERS BAR */}
@@ -208,9 +209,11 @@ export default function PlatformUsers() {
                     style={styles.accordionHeader}
                   >
                     <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                      <span style={{ fontSize: '1.2rem' }}>
-                        {groupId === 'platform' ? '👑' : '🏢'}
-                      </span>
+                      {groupId === 'platform' ? (
+                        <span style={{ fontSize: '1.2rem' }}>👑</span>
+                      ) : (
+                        <Logo size={24} />
+                      )}
                       <div>
                         <span style={styles.accordionTitle}>
                           {group.tenant.name}

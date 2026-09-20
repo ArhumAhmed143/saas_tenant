@@ -55,6 +55,8 @@ app.use('/api/epics', epicRoutes);
 app.use('/api/burndown', burndownRoutes);
 app.use('/api/tenants', tenantsRoutes);
 app.use('/api/tenant', tenantRoutes);
+app.use('/api/organizations', tenantsRoutes);
+app.use('/api/organization', tenantRoutes);
 app.use('/api/platform', platformRoutes);
 app.use('/api/notifications', notificationRoutes);
 app.use('/api/invite', inviteRoutes);

@@ -1,19 +1,25 @@
 import React, { useState } from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
 import { useApp } from '../context/AppContext';
+import Logo from './Logo';
 
 export const Sidebar = () => {
-  const { currentUser, logout, currentTenant } = useApp();
+  const { currentUser, logout, currentTenant, isMobileMenuOpen, toggleMobileMenu, closeMobileMenu } = useApp();
   const navigate = useNavigate();
-  const [isOpen, setIsOpen] = useState(false);
+  const [localOpen, setLocalOpen] = useState(false);
+
+  const isOpen = isMobileMenuOpen !== undefined ? isMobileMenuOpen : localOpen;
+  const handleToggle = toggleMobileMenu || (() => setLocalOpen(prev => !prev));
+  const handleClose = closeMobileMenu || (() => setLocalOpen(false));
 
   const handleLogout = () => {
+    handleClose();
     logout();
     navigate('/login');
   };
 
   const closeSidebar = () => {
-    setIsOpen(false);
+    handleClose();
   };
 
   const role = currentUser?.role;
@@ -98,11 +104,12 @@ export const Sidebar = () => {
 
   return (
     <>
-      {/* Hamburger Toggle Button (Mobile Only) */}
+      {/* Hamburger Toggle Button (Mobile Fallback) */}
       <button
         className="sidebar-toggle"
-        onClick={() => setIsOpen(!isOpen)}
+        onClick={handleToggle}
         aria-label="Toggle menu"
+        type="button"
       >
         {isOpen ? '✕' : '☰'}
       </button>
@@ -110,7 +117,7 @@ export const Sidebar = () => {
       {/* Overlay (Mobile Only) */}
       <div
         className={`sidebar-overlay ${isOpen ? 'show' : ''}`}
-        onClick={closeSidebar}
+        onClick={handleClose}
       />
 
       {/* Sidebar */}
@@ -120,24 +127,26 @@ export const Sidebar = () => {
       >
         {/* LOGO WITH SVG */}
         <div style={styles.logoHeader}>
-          <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
-            <rect width="32" height="32" rx="8" fill="url(#gradient)"/>
-            <path d="M10 16L16 10L22 16L16 22L10 16Z" stroke="white" strokeWidth="2" strokeLinejoin="round"/>
-            <circle cx="16" cy="16" r="3" fill="white"/>
-            <defs>
-              <linearGradient id="gradient" x1="0" y1="0" x2="32" y2="32">
-                <stop stopColor="#4f46e5"/>
-                <stop offset="1" stopColor="#7c3aed"/>
-              </linearGradient>
-            </defs>
-          </svg>
-          <span style={styles.logoText}>SaaS</span>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+            <Logo size={32} />
+            <span style={styles.logoText}>SaaS</span>
+          </div>
+
+          {/* Close button for mobile */}
+          <button
+            className="sidebar-close-btn"
+            onClick={handleClose}
+            aria-label="Close sidebar"
+            type="button"
+          >
+            ✕
+          </button>
         </div>
 
         {/* WORKSPACE BADGE */}
         {role !== 'PlatformOwner' && currentTenant && (
           <div style={styles.tenantBox}>
-            <div style={styles.tenantIcon}>🏢</div>
+            <Logo size={24} />
             <div style={{ flex: 1, minWidth: 0 }}>
               <label style={styles.tenantLabel}>WORKSPACE</label>
               <div style={styles.tenantName}>{currentTenant.name}</div>
@@ -222,6 +231,7 @@ const styles = {
   logoHeader: {
     display: 'flex',
     alignItems: 'center',
+    justifyContent: 'space-between',
     gap: 12,
     marginBottom: 20,
     paddingBottom: 12,
